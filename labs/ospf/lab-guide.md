@@ -15,17 +15,21 @@ Learn OSPF basics by configuring and observing OSPF neighbor relationships and r
 
 1. Deploy the lab:
    ```bash
+   containerlab deploy -t topology.yml
+   # Or with sudo if needed:
    sudo containerlab deploy -t topology.yml
    ```
 
-2. Wait about 30 seconds for containers to fully start
+2. Wait about 30-60 seconds for containers to fully start and OSPFD to initialize
 
-3. Access routers:
+3. Access routers using vtysh:
    ```bash
    docker exec -it clab-ospf-fundamentals-r1 vtysh
    docker exec -it clab-ospf-fundamentals-r2 vtysh
    docker exec -it clab-ospf-fundamentals-r3 vtysh
    ```
+   
+   **Note:** You may see some warnings about FD limits - these are harmless.
 
 ## Lab Tasks
 
@@ -75,14 +79,26 @@ exit
 
 ### Task 2: Configure OSPF
 
+**Important:** FRR uses `router ospf` (not `router ospf 1` like Cisco)
+
 On each router, configure OSPF:
 
 ```
 configure terminal
 router ospf
- ospf router-id [X.X.X.X]  # Use loopback IP
+ ospf router-id [X.X.X.X]  # Use loopback IP (1.1.1.1, 2.2.2.2, or 3.3.3.3)
  network 10.0.0.0/8 area 0
  network [X.X.X.X]/32 area 0  # Advertise loopback
+exit
+```
+
+Example for R1:
+```
+configure terminal
+router ospf
+ ospf router-id 1.1.1.1
+ network 10.0.0.0/8 area 0
+ network 1.1.1.1/32 area 0
 exit
 ```
 
@@ -127,8 +143,19 @@ exit
 
 When finished:
 ```bash
+containerlab destroy -t topology.yml --cleanup
+# Or with sudo:
 sudo containerlab destroy -t topology.yml --cleanup
 ```
+
+## FRR vs Cisco Command Differences
+
+| Cisco IOS | FRR |
+|-----------|-----|
+| `router ospf 1` | `router ospf` |
+| `network 10.0.12.0 0.0.0.3 area 0` | `network 10.0.12.0/30 area 0` |
+| `show ip ospf` | `show ip ospf` (same) |
+| `show ip ospf neighbor` | `show ip ospf neighbor` (same) |
 
 ## Questions to Consider
 
