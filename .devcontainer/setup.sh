@@ -9,7 +9,11 @@ bash -c "$(curl -sL https://get.containerlab.dev)" -- -v 0.48.6
 
 # Install netlab
 echo "Installing Netlab..."
-pip3 install --user networklab
+pip3 install networklab
+
+# Add user's pip bin directory to PATH for this session
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 
 # Install additional Python packages for automation
 pip3 install --user ansible netmiko napalm
@@ -24,7 +28,13 @@ docker pull haproxy:2.9-alpine
 mkdir -p ~/labs/{ospf,bgp,loadbalancer}
 
 # Set permissions for containerlab
-sudo chown -R vscode:vscode /etc/containerlab
+sudo chown -R $(whoami):$(whoami) /etc/containerlab 2>/dev/null || true
+
+# Configure containerlab for rootless operation in Codespaces if needed
+if [ -n "$CODESPACES" ]; then
+    # Allow containerlab to run without sudo in Codespaces
+    sudo chmod 666 /var/run/docker.sock 2>/dev/null || true
+fi
 
 # Install useful networking tools
 sudo apt-get update
