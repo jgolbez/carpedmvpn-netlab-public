@@ -109,7 +109,7 @@ sudo containerlab destroy -a --cleanup
 
 ## 📄 Copyright Notice
 
-© 2026 [CarpeDMVPN]. All Rights Reserved.
+© 2026 [Carpe DMVPN, LLC]. All Rights Reserved.
 
 This repository contains sample training materials. The complete course materials, including 
 comprehensive lab workbooks and solutions, are available for purchase.
