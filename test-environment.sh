@@ -5,6 +5,9 @@ echo "Network Lab Environment Test"
 echo "========================================="
 echo ""
 
+# Ensure PATH includes user's local bin (where pip installs to)
+export PATH="$HOME/.local/bin:$PATH"
+
 # Colors for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -31,9 +34,8 @@ test_component "Docker" "docker --version"
 # Check Containerlab
 test_component "Containerlab" "containerlab version"
 
-# Check Netlab (might be in .local/bin)
-export PATH="$HOME/.local/bin:$PATH"
-test_component "Netlab" "which netlab || which netlab.py || python3 -m netlab --version"
+# Check Netlab
+test_component "Netlab" "netlab --version 2>/dev/null || python3 -m netlab --version"
 
 # Check Python
 test_component "Python 3" "python3 --version"
