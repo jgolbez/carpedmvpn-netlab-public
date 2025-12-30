@@ -5,9 +5,6 @@ echo "Network Lab Environment Test"
 echo "========================================="
 echo ""
 
-# Ensure PATH includes user's local bin (where pip installs to)
-export PATH="$HOME/.local/bin:$PATH"
-
 # Colors for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -34,8 +31,15 @@ test_component "Docker" "docker --version"
 # Check Containerlab
 test_component "Containerlab" "containerlab version"
 
-# Check Netlab
-test_component "Netlab" "netlab --version 2>/dev/null || python3 -m netlab --version"
+# Check Netlab - multiple ways it might work
+echo -n "Testing Netlab... "
+if command -v netlab &>/dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC} Installed (direct command)"
+elif python3 -m netlab --version &>/dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC} Installed (use: python3 -m netlab)"
+else
+    echo -e "${YELLOW}⚠${NC} Not found (optional - only needed for BGP lab auto-config)"
+fi
 
 # Check Python
 test_component "Python 3" "python3 --version"
@@ -73,7 +77,7 @@ for lab in "ospf" "bgp" "loadbalancer"; do
     fi
 done
 
-# Test containerlab with a minimal topology
+# Test containerlab deployment
 echo ""
 echo "Testing containerlab deployment:"
 cat > /tmp/test-topo.yml << EOF
@@ -86,39 +90,18 @@ topology:
 EOF
 
 echo -n "  Creating test topology... "
-# In Codespaces, we may need to use containerlab without sudo
-if [ -n "$CODESPACES" ]; then
-    if containerlab deploy -t /tmp/test-topo.yml --reconfigure &>/dev/null 2>&1; then
+# The containerlab devcontainer runs as root, so no sudo needed
+if containerlab deploy -t /tmp/test-topo.yml &>/dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC} Success"
+    echo -n "  Destroying test topology... "
+    if containerlab destroy -t /tmp/test-topo.yml --cleanup &>/dev/null 2>&1; then
         echo -e "${GREEN}✓${NC} Success"
-        echo -n "  Destroying test topology... "
-        if containerlab destroy -t /tmp/test-topo.yml --cleanup &>/dev/null 2>&1; then
-            echo -e "${GREEN}✓${NC} Success"
-        else
-            echo -e "${YELLOW}⚠${NC} Cleanup failed (not critical)"
-        fi
     else
-        # Try with sudo if first attempt fails
-        if sudo containerlab deploy -t /tmp/test-topo.yml --reconfigure &>/dev/null 2>&1; then
-            echo -e "${GREEN}✓${NC} Success (with sudo)"
-            sudo containerlab destroy -t /tmp/test-topo.yml --cleanup &>/dev/null 2>&1
-        else
-            echo -e "${YELLOW}⚠${NC} Failed (may need sudo for actual labs)"
-        fi
+        echo -e "${YELLOW}⚠${NC} Cleanup failed (not critical)"
     fi
 else
-    # Local environment - use sudo
-    if sudo containerlab deploy -t /tmp/test-topo.yml &>/dev/null 2>&1; then
-        echo -e "${GREEN}✓${NC} Success"
-        echo -n "  Destroying test topology... "
-        if sudo containerlab destroy -t /tmp/test-topo.yml --cleanup &>/dev/null 2>&1; then
-            echo -e "${GREEN}✓${NC} Success"
-        else
-            echo -e "${RED}✗${NC} Failed"
-        fi
-    else
-        echo -e "${RED}✗${NC} Failed"
-        echo "  Check: sudo permissions, Docker running"
-    fi
+    echo -e "${RED}✗${NC} Failed"
+    echo "  This might be normal if not running as root"
 fi
 
 rm -f /tmp/test-topo.yml
@@ -129,14 +112,13 @@ echo "System Resources:"
 echo "  CPU Cores: $(nproc)"
 echo "  Total RAM: $(free -h | awk '/^Mem:/ {print $2}')"
 echo "  Available RAM: $(free -h | awk '/^Mem:/ {print $7}')"
-echo "  Docker disk usage: $(docker system df | awk '/Images/ {print $4}')"
+echo "  Docker disk usage: $(docker system df 2>/dev/null | awk '/Images/ {print $4}')"
 
 # GitHub Codespaces detection
 echo ""
 if [ -n "$CODESPACES" ]; then
     echo -e "${GREEN}Running in GitHub Codespaces${NC}"
     echo "  Codespace name: $CODESPACE_NAME"
-    echo "  Region: $CODESPACE_REGION"
 else
     echo "Running locally"
 fi
@@ -149,14 +131,25 @@ echo "========================================="
 echo ""
 echo "Your environment is ready for:"
 echo "  • OSPF lab - Basic containerlab"
-echo "  • BGP lab - Netlab with auto-configuration"
 echo "  • Load Balancer lab - Multi-container services"
+
+# Check if netlab works
+if command -v netlab &>/dev/null 2>&1 || python3 -m netlab --version &>/dev/null 2>&1; then
+    echo "  • BGP lab - With netlab auto-configuration"
+    NETLAB_CMD="netlab up or python3 -m netlab up"
+else
+    echo "  • BGP lab - Manual configuration (netlab not available)"
+    NETLAB_CMD="manual configuration"
+fi
+
 echo ""
 echo "Quick start:"
 echo "  cd ~/labs/ospf"
-echo "  sudo containerlab deploy -t topology.yml"
+echo "  containerlab deploy -t topology.yml"
 echo ""
-echo "Or with netlab:"
-echo "  cd ~/labs/bgp"
-echo "  netlab up"
+if [ -n "$NETLAB_CMD" ]; then
+    echo "Or with netlab (BGP lab):"
+    echo "  cd ~/labs/bgp"
+    echo "  $NETLAB_CMD"
+fi
 echo ""
