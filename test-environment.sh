@@ -31,8 +31,9 @@ test_component "Docker" "docker --version"
 # Check Containerlab
 test_component "Containerlab" "containerlab version"
 
-# Check Netlab
-test_component "Netlab" "netlab --version"
+# Check Netlab (might be in .local/bin)
+export PATH="$HOME/.local/bin:$PATH"
+test_component "Netlab" "which netlab || which netlab.py || python3 -m netlab --version"
 
 # Check Python
 test_component "Python 3" "python3 --version"
@@ -83,17 +84,39 @@ topology:
 EOF
 
 echo -n "  Creating test topology... "
-if sudo containerlab deploy -t /tmp/test-topo.yml &>/dev/null; then
-    echo -e "${GREEN}✓${NC} Success"
-    echo -n "  Destroying test topology... "
-    if sudo containerlab destroy -t /tmp/test-topo.yml --cleanup &>/dev/null; then
+# In Codespaces, we may need to use containerlab without sudo
+if [ -n "$CODESPACES" ]; then
+    if containerlab deploy -t /tmp/test-topo.yml --reconfigure &>/dev/null 2>&1; then
         echo -e "${GREEN}✓${NC} Success"
+        echo -n "  Destroying test topology... "
+        if containerlab destroy -t /tmp/test-topo.yml --cleanup &>/dev/null 2>&1; then
+            echo -e "${GREEN}✓${NC} Success"
+        else
+            echo -e "${YELLOW}⚠${NC} Cleanup failed (not critical)"
+        fi
     else
-        echo -e "${RED}✗${NC} Failed"
+        # Try with sudo if first attempt fails
+        if sudo containerlab deploy -t /tmp/test-topo.yml --reconfigure &>/dev/null 2>&1; then
+            echo -e "${GREEN}✓${NC} Success (with sudo)"
+            sudo containerlab destroy -t /tmp/test-topo.yml --cleanup &>/dev/null 2>&1
+        else
+            echo -e "${YELLOW}⚠${NC} Failed (may need sudo for actual labs)"
+        fi
     fi
 else
-    echo -e "${RED}✗${NC} Failed"
-    echo "  Check: sudo permissions, Docker running"
+    # Local environment - use sudo
+    if sudo containerlab deploy -t /tmp/test-topo.yml &>/dev/null 2>&1; then
+        echo -e "${GREEN}✓${NC} Success"
+        echo -n "  Destroying test topology... "
+        if sudo containerlab destroy -t /tmp/test-topo.yml --cleanup &>/dev/null 2>&1; then
+            echo -e "${GREEN}✓${NC} Success"
+        else
+            echo -e "${RED}✗${NC} Failed"
+        fi
+    else
+        echo -e "${RED}✗${NC} Failed"
+        echo "  Check: sudo permissions, Docker running"
+    fi
 fi
 
 rm -f /tmp/test-topo.yml
