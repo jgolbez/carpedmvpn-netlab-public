@@ -63,7 +63,7 @@ That's it! No local installation required. Everything runs in the cloud.
 | GNS3 Cloud | $50+ | 1-2 hours | Full features |
 | Physical Lab | $1000s | Days | Hardware |
 
-## 📖 Learning Path
+## Learning Path
 
 ### Suggested Progression
 1. **Week 1-2**: OSPF Fundamentals
@@ -71,20 +71,14 @@ That's it! No local installation required. Everything runs in the cloud.
 3. **Week 5-6**: Load Balancing
 4. **Week 7-8**: Combined scenarios
 
-### Assessment Ideas
-- Lab completion checkpoints
-- Packet capture analysis
-- Troubleshooting scenarios
-- Design modifications
-
-## 📚 Additional Resources
+## Additional Resources
 
 - [Containerlab Documentation](https://containerlab.dev)
 - [Netlab Documentation](https://netlab.tools)
 - [BGP Labs (bgplabs.net)](https://bgplabs.net)
 - [FRRouting Docs](https://docs.frrouting.org)
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
