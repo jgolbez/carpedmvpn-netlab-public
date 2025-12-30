@@ -5,41 +5,42 @@ mgmt:
   ipv4-subnet: 172.20.0.0/24
 
 topology:
-  kinds:
-    linux:
-      image: quay.io/frrouting/frr:10.1.0
-  
   nodes:
     r1:
       kind: linux
+      image: quay.io/frrouting/frr:10.1.0
       mgmt-ipv4: 172.20.0.11
       exec:
-        # Configure FRR daemons
-        - echo 'zebra=yes' > /etc/frr/daemons
-        - echo 'ospfd=yes' >> /etc/frr/daemons
-        - echo 'bgpd=no' >> /etc/frr/daemons
-        - /usr/lib/frr/frrinit.sh start
+        # Create minimal config files to avoid warnings
+        - sh -c 'echo "service integrated-vtysh-config" > /etc/frr/vtysh.conf'
+        - sh -c 'echo -e "frr version 10.1\nfrr defaults traditional\nhostname r1" > /etc/frr/frr.conf'
+        # Enable OSPFD
+        - sed -i 's/ospfd=no/ospfd=yes/g' /etc/frr/daemons
+        # Restart FRR
+        - /usr/lib/frr/frrinit.sh restart
     
     r2:
       kind: linux
+      image: quay.io/frrouting/frr:10.1.0
       mgmt-ipv4: 172.20.0.12
       exec:
-        - echo 'zebra=yes' > /etc/frr/daemons
-        - echo 'ospfd=yes' >> /etc/frr/daemons
-        - echo 'bgpd=no' >> /etc/frr/daemons
-        - /usr/lib/frr/frrinit.sh start
+        - sh -c 'echo "service integrated-vtysh-config" > /etc/frr/vtysh.conf'
+        - sh -c 'echo -e "frr version 10.1\nfrr defaults traditional\nhostname r2" > /etc/frr/frr.conf'
+        - sed -i 's/ospfd=no/ospfd=yes/g' /etc/frr/daemons
+        - /usr/lib/frr/frrinit.sh restart
     
     r3:
       kind: linux
+      image: quay.io/frrouting/frr:10.1.0
       mgmt-ipv4: 172.20.0.13
       exec:
-        - echo 'zebra=yes' > /etc/frr/daemons
-        - echo 'ospfd=yes' >> /etc/frr/daemons
-        - echo 'bgpd=no' >> /etc/frr/daemons
-        - /usr/lib/frr/frrinit.sh start
+        - sh -c 'echo "service integrated-vtysh-config" > /etc/frr/vtysh.conf'
+        - sh -c 'echo -e "frr version 10.1\nfrr defaults traditional\nhostname r3" > /etc/frr/frr.conf'
+        - sed -i 's/ospfd=no/ospfd=yes/g' /etc/frr/daemons
+        - /usr/lib/frr/frrinit.sh restart
 
   links:
     # Create a triangle topology
     - endpoints: ["r1:eth1", "r2:eth1"]
-    - endpoints: ["r2:eth2", "r3:eth1"]
+    - endpoints: ["r2:eth2", "r3:eth1"]  
     - endpoints: ["r3:eth2", "r1:eth2"]
