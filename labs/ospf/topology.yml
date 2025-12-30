@@ -1,0 +1,45 @@
+name: ospf-fundamentals
+
+mgmt:
+  network: lab-mgmt
+  ipv4-subnet: 172.20.0.0/24
+
+topology:
+  kinds:
+    linux:
+      image: quay.io/frrouting/frr:10.1.0
+  
+  nodes:
+    r1:
+      kind: linux
+      mgmt-ipv4: 172.20.0.11
+      exec:
+        # Configure FRR daemons
+        - echo 'zebra=yes' > /etc/frr/daemons
+        - echo 'ospfd=yes' >> /etc/frr/daemons
+        - echo 'bgpd=no' >> /etc/frr/daemons
+        - /usr/lib/frr/frrinit.sh start
+    
+    r2:
+      kind: linux
+      mgmt-ipv4: 172.20.0.12
+      exec:
+        - echo 'zebra=yes' > /etc/frr/daemons
+        - echo 'ospfd=yes' >> /etc/frr/daemons
+        - echo 'bgpd=no' >> /etc/frr/daemons
+        - /usr/lib/frr/frrinit.sh start
+    
+    r3:
+      kind: linux
+      mgmt-ipv4: 172.20.0.13
+      exec:
+        - echo 'zebra=yes' > /etc/frr/daemons
+        - echo 'ospfd=yes' >> /etc/frr/daemons
+        - echo 'bgpd=no' >> /etc/frr/daemons
+        - /usr/lib/frr/frrinit.sh start
+
+  links:
+    # Create a triangle topology
+    - endpoints: ["r1:eth1", "r2:eth1"]
+    - endpoints: ["r2:eth2", "r3:eth1"]
+    - endpoints: ["r3:eth2", "r1:eth2"]
