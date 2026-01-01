@@ -11,7 +11,13 @@ topology:
       image: quay.io/frrouting/frr:10.1.0
       mgmt-ipv4: 172.20.0.11
       exec:
-        # Create minimal config files to avoid warnings
+        # Configure IPs at Linux level
+        - ip addr add 10.0.12.1/30 dev eth1
+        - ip addr add 10.0.13.1/30 dev eth2
+        - ip addr add 1.1.1.1/32 dev lo
+        - ip link set eth1 up
+        - ip link set eth2 up
+        # Create minimal config files
         - sh -c 'echo "service integrated-vtysh-config" > /etc/frr/vtysh.conf'
         - sh -c 'echo -e "frr version 10.1\nfrr defaults traditional\nhostname r1" > /etc/frr/frr.conf'
         # Enable OSPFD
@@ -24,9 +30,18 @@ topology:
       image: quay.io/frrouting/frr:10.1.0
       mgmt-ipv4: 172.20.0.12
       exec:
+        # Configure IPs at Linux level
+        - ip addr add 10.0.12.2/30 dev eth1
+        - ip addr add 10.0.23.1/30 dev eth2
+        - ip addr add 2.2.2.2/32 dev lo
+        - ip link set eth1 up
+        - ip link set eth2 up
+        # Create minimal config files
         - sh -c 'echo "service integrated-vtysh-config" > /etc/frr/vtysh.conf'
         - sh -c 'echo -e "frr version 10.1\nfrr defaults traditional\nhostname r2" > /etc/frr/frr.conf'
+        # Enable OSPFD
         - sed -i 's/ospfd=no/ospfd=yes/g' /etc/frr/daemons
+        # Restart FRR
         - /usr/lib/frr/frrinit.sh restart
     
     r3:
@@ -34,9 +49,18 @@ topology:
       image: quay.io/frrouting/frr:10.1.0
       mgmt-ipv4: 172.20.0.13
       exec:
+        # Configure IPs at Linux level
+        - ip addr add 10.0.23.2/30 dev eth1
+        - ip addr add 10.0.13.2/30 dev eth2
+        - ip addr add 3.3.3.3/32 dev lo
+        - ip link set eth1 up
+        - ip link set eth2 up
+        # Create minimal config files
         - sh -c 'echo "service integrated-vtysh-config" > /etc/frr/vtysh.conf'
         - sh -c 'echo -e "frr version 10.1\nfrr defaults traditional\nhostname r3" > /etc/frr/frr.conf'
+        # Enable OSPFD
         - sed -i 's/ospfd=no/ospfd=yes/g' /etc/frr/daemons
+        # Restart FRR
         - /usr/lib/frr/frrinit.sh restart
 
   links:
