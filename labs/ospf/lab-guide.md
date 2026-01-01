@@ -5,11 +5,34 @@ Learn OSPF basics by configuring and observing OSPF neighbor relationships and r
 
 ## Topology
 ```
-     r1
-    /  \
-   /    \
-  r2----r3
+     r1                     r2
+  1.1.1.1/32            2.2.2.2/32
+     eth1: .1---------.2 :eth1
+         10.0.12.0/30
+     eth2: .1     eth2: .1
+           |            |
+    10.0.13.0/30  10.0.23.0/30
+           |            |
+     eth2: .2     eth1: .2
+            \    r3     /
+             3.3.3.3/32
 ```
+
+## Pre-configured IP Addresses
+
+The lab automatically configures these IPs when deployed:
+
+| Router | Interface | IP Address |
+|--------|-----------|------------|
+| R1 | lo | 1.1.1.1/32 |
+| R1 | eth1 | 10.0.12.1/30 |
+| R1 | eth2 | 10.0.13.1/30 |
+| R2 | lo | 2.2.2.2/32 |
+| R2 | eth1 | 10.0.12.2/30 |
+| R2 | eth2 | 10.0.23.1/30 |
+| R3 | lo | 3.3.3.3/32 |
+| R3 | eth1 | 10.0.23.2/30 |
+| R3 | eth2 | 10.0.13.2/30 |
 
 ## Starting the Lab
 
@@ -20,7 +43,7 @@ Learn OSPF basics by configuring and observing OSPF neighbor relationships and r
    sudo containerlab deploy -t topology.yml
    ```
 
-2. Wait about 30-60 seconds for containers to fully start and OSPFD to initialize
+2. Wait about 30-60 seconds for containers to fully start
 
 3. Access routers using vtysh:
    ```bash
@@ -28,83 +51,67 @@ Learn OSPF basics by configuring and observing OSPF neighbor relationships and r
    docker exec -it clab-ospf-fundamentals-r2 vtysh
    docker exec -it clab-ospf-fundamentals-r3 vtysh
    ```
-   
-   **Note:** You may see some warnings about FD limits - these are harmless.
 
 ## Lab Tasks
 
-### Task 1: Configure IP Addresses
+### Task 1: Verify Pre-configured IP Addresses
 
-On R1:
+Check that IPs are configured correctly:
 ```
-configure terminal
-interface eth1
- ip address 10.0.12.1/30
- no shutdown
-interface eth2  
- ip address 10.0.13.1/30
- no shutdown
-interface lo0
- ip address 1.1.1.1/32
-exit
+show interface brief
+show interface eth1
+show interface eth2
 ```
 
-On R2:
+Test basic connectivity between directly connected routers:
 ```
-configure terminal
-interface eth1
- ip address 10.0.12.2/30
- no shutdown
-interface eth2
- ip address 10.0.23.1/30
- no shutdown
-interface lo0
- ip address 2.2.2.2/32
-exit
-```
-
-On R3:
-```
-configure terminal
-interface eth1
- ip address 10.0.23.2/30
- no shutdown
-interface eth2
- ip address 10.0.13.2/30
- no shutdown
-interface lo0
- ip address 3.3.3.3/32
-exit
+ping 10.0.12.2   # From R1 to R2
+ping 10.0.13.2   # From R1 to R3
 ```
 
 ### Task 2: Configure OSPF
 
 **Important:** FRR uses `router ospf` (not `router ospf 1` like Cisco)
 
-On each router, configure OSPF:
-
-```
-configure terminal
-router ospf
- ospf router-id [X.X.X.X]  # Use loopback IP (1.1.1.1, 2.2.2.2, or 3.3.3.3)
- network 10.0.0.0/8 area 0
- network [X.X.X.X]/32 area 0  # Advertise loopback
-exit
-```
-
-Example for R1:
+On R1:
 ```
 configure terminal
 router ospf
  ospf router-id 1.1.1.1
- network 10.0.0.0/8 area 0
+ network 10.0.12.0/30 area 0
+ network 10.0.13.0/30 area 0
  network 1.1.1.1/32 area 0
 exit
+write memory
+```
+
+On R2:
+```
+configure terminal
+router ospf
+ ospf router-id 2.2.2.2
+ network 10.0.12.0/30 area 0
+ network 10.0.23.0/30 area 0
+ network 2.2.2.2/32 area 0
+exit
+write memory
+```
+
+On R3:
+```
+configure terminal
+router ospf
+ ospf router-id 3.3.3.3
+ network 10.0.23.0/30 area 0
+ network 10.0.13.0/30 area 0
+ network 3.3.3.3/32 area 0
+exit
+write memory
 ```
 
 ### Task 3: Verify OSPF Operations
 
-1. Check OSPF neighbors:
+1. Check OSPF neighbors (should see 2 neighbors on each router):
    ```
    show ip ospf neighbor
    ```
@@ -114,12 +121,12 @@ exit
    show ip ospf database
    ```
 
-3. Check routing table:
+3. Check routing table (should see OSPF routes to other loopbacks):
    ```
    show ip route ospf
    ```
 
-4. Test connectivity:
+4. Test end-to-end connectivity:
    ```
    ping 2.2.2.2 source 1.1.1.1
    ping 3.3.3.3 source 1.1.1.1
@@ -127,17 +134,51 @@ exit
 
 ### Task 4: Experiment with OSPF
 
-1. Shut down the link between R2 and R3:
-   - On R2: `configure terminal`, `interface eth2`, `shutdown`
-   - Observe how OSPF reconverges
-   - Check the new path with `traceroute 3.3.3.3 source 2.2.2.2`
+1. **Test convergence** - Shut down a link and observe rerouting:
+   ```bash
+   # From Linux shell on R2 (exit vtysh first):
+   exit
+   ip link set eth2 down
+   vtysh
+   
+   # Back in vtysh, check OSPF:
+   show ip ospf neighbor
+   show ip route ospf
+   ```
 
-2. Change OSPF cost on a link:
-   - On R1: `configure terminal`, `interface eth1`, `ip ospf cost 100`
-   - Observe how traffic patterns change
+2. **Adjust OSPF costs** to influence path selection:
+   ```
+   configure terminal
+   interface eth1
+    ip ospf cost 100
+   exit
+   ```
 
-3. Monitor OSPF events:
-   - `debug ospf events` (use carefully, `undebug all` to stop)
+3. **Monitor OSPF events**:
+   ```
+   debug ospf events
+   # Make a change, observe logs
+   undebug all
+   ```
+
+## Useful Commands Reference
+
+| Purpose | Command |
+|---------|---------|
+| Show interfaces with IPs | `show interface brief` |
+| Show OSPF neighbors | `show ip ospf neighbor` |
+| Show OSPF routes | `show ip route ospf` |
+| Show OSPF database | `show ip ospf database` |
+| Show OSPF interface details | `show ip ospf interface` |
+| Save configuration | `write memory` |
+
+## FRR vs Cisco Command Differences
+
+| Cisco IOS | FRR |
+|-----------|-----|
+| `router ospf 1` | `router ospf` |
+| `network 10.0.12.0 0.0.0.3 area 0` | `network 10.0.12.0/30 area 0` |
+| `show ip ospf` | `show ip ospf` (same) |
 
 ## Cleanup
 
@@ -148,15 +189,6 @@ containerlab destroy -t topology.yml --cleanup
 sudo containerlab destroy -t topology.yml --cleanup
 ```
 
-## FRR vs Cisco Command Differences
-
-| Cisco IOS | FRR |
-|-----------|-----|
-| `router ospf 1` | `router ospf` |
-| `network 10.0.12.0 0.0.0.3 area 0` | `network 10.0.12.0/30 area 0` |
-| `show ip ospf` | `show ip ospf` (same) |
-| `show ip ospf neighbor` | `show ip ospf neighbor` (same) |
-
 ## Questions to Consider
 
 1. How long does OSPF take to detect a failed neighbor?
@@ -166,4 +198,7 @@ sudo containerlab destroy -t topology.yml --cleanup
 
 ## Next Steps
 
-Try modifying the topology to add a fourth router or create multiple OSPF areas!
+- Try adding a fourth router to the topology
+- Experiment with multiple OSPF areas
+- Configure OSPF authentication
+- Test OSPF stub areas
