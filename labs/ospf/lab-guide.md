@@ -18,22 +18,6 @@ Learn OSPF basics by configuring and observing OSPF neighbor relationships and r
              3.3.3.3/32
 ```
 
-## Pre-configured IP Addresses
-
-The lab automatically configures these IPs when deployed:
-
-| Router | Interface | IP Address |
-|--------|-----------|------------|
-| R1 | lo | 1.1.1.1/32 |
-| R1 | eth1 | 10.0.12.1/30 |
-| R1 | eth2 | 10.0.13.1/30 |
-| R2 | lo | 2.2.2.2/32 |
-| R2 | eth1 | 10.0.12.2/30 |
-| R2 | eth2 | 10.0.23.1/30 |
-| R3 | lo | 3.3.3.3/32 |
-| R3 | eth1 | 10.0.23.2/30 |
-| R3 | eth2 | 10.0.13.2/30 |
-
 ## Starting the Lab
 
 1. Deploy the lab:
@@ -43,35 +27,69 @@ The lab automatically configures these IPs when deployed:
    sudo containerlab deploy -t topology.yml
    ```
 
-2. Wait about 30-60 seconds for containers to fully start
-
-3. Access routers using vtysh:
+2. Access each router and enable OSPFD:
    ```bash
-   docker exec -it clab-ospf-fundamentals-r1 vtysh
-   docker exec -it clab-ospf-fundamentals-r2 vtysh
-   docker exec -it clab-ospf-fundamentals-r3 vtysh
+   # For each router (r1, r2, r3):
+   docker exec -it clab-ospf-fundamentals-r1 bash
+   
+   # Enable OSPFD in the FRR daemons file:
+   sed -i 's/ospfd=no/ospfd=yes/g' /etc/frr/daemons
+   
+   # Restart FRR:
+   /usr/lib/frr/frrinit.sh restart
+   
+   # Now enter vtysh:
+   vtysh
    ```
 
 ## Lab Tasks
 
-### Task 1: Verify Pre-configured IP Addresses
+### Task 1: Configure IP Addresses
 
-Check that IPs are configured correctly:
-```
-show interface brief
-show interface eth1
-show interface eth2
+**For GitHub Codespaces**: You need to configure IPs at the Linux level first:
+
+On R1 (in bash, before entering vtysh):
+```bash
+ip addr add 10.0.12.1/30 dev eth1
+ip addr add 10.0.13.1/30 dev eth2
+ip addr add 1.1.1.1/32 dev lo
+ip link set eth1 up
+ip link set eth2 up
 ```
 
-Test basic connectivity between directly connected routers:
+On R2 (in bash):
+```bash
+ip addr add 10.0.12.2/30 dev eth1
+ip addr add 10.0.23.1/30 dev eth2
+ip addr add 2.2.2.2/32 dev lo
+ip link set eth1 up
+ip link set eth2 up
 ```
-ping 10.0.12.2   # From R1 to R2
-ping 10.0.13.2   # From R1 to R3
+
+On R3 (in bash):
+```bash
+ip addr add 10.0.23.2/30 dev eth1
+ip addr add 10.0.13.2/30 dev eth2
+ip addr add 3.3.3.3/32 dev lo
+ip link set eth1 up
+ip link set eth2 up
+```
+
+**For Local Linux**: You can configure IPs directly in vtysh:
+```
+configure terminal
+interface eth1
+ ip address 10.0.12.1/30
+interface eth2
+ ip address 10.0.13.1/30
+interface lo
+ ip address 1.1.1.1/32
+exit
 ```
 
 ### Task 2: Configure OSPF
 
-**Important:** FRR uses `router ospf` (not `router ospf 1` like Cisco)
+In vtysh on each router:
 
 On R1:
 ```
@@ -134,43 +152,47 @@ write memory
 
 ### Task 4: Experiment with OSPF
 
-1. **Test convergence** - Shut down a link and observe rerouting:
-   ```bash
-   # From Linux shell on R2 (exit vtysh first):
-   exit
-   ip link set eth2 down
-   vtysh
-   
-   # Back in vtysh, check OSPF:
-   show ip ospf neighbor
-   show ip route ospf
-   ```
+1. **Test convergence** - Shut down a link and observe rerouting
+2. **Adjust OSPF costs** to influence path selection
+3. **Monitor OSPF events** with `debug ospf events`
 
-2. **Adjust OSPF costs** to influence path selection:
-   ```
-   configure terminal
-   interface eth1
-    ip ospf cost 100
-   exit
-   ```
+## Quick Setup Script (Optional)
 
-3. **Monitor OSPF events**:
-   ```
-   debug ospf events
-   # Make a change, observe logs
-   undebug all
-   ```
+If you want to automate the initial setup, create this script:
 
-## Useful Commands Reference
+```bash
+#!/bin/bash
+# setup-ospf-lab.sh
 
-| Purpose | Command |
-|---------|---------|
-| Show interfaces with IPs | `show interface brief` |
-| Show OSPF neighbors | `show ip ospf neighbor` |
-| Show OSPF routes | `show ip route ospf` |
-| Show OSPF database | `show ip ospf database` |
-| Show OSPF interface details | `show ip ospf interface` |
-| Save configuration | `write memory` |
+for i in 1 2 3; do
+  echo "Setting up r$i..."
+  docker exec clab-ospf-fundamentals-r$i sed -i 's/ospfd=no/ospfd=yes/g' /etc/frr/daemons
+  docker exec clab-ospf-fundamentals-r$i /usr/lib/frr/frrinit.sh restart
+done
+
+# Add IPs for R1
+docker exec clab-ospf-fundamentals-r1 ip addr add 10.0.12.1/30 dev eth1
+docker exec clab-ospf-fundamentals-r1 ip addr add 10.0.13.1/30 dev eth2
+docker exec clab-ospf-fundamentals-r1 ip addr add 1.1.1.1/32 dev lo
+docker exec clab-ospf-fundamentals-r1 ip link set eth1 up
+docker exec clab-ospf-fundamentals-r1 ip link set eth2 up
+
+# Add IPs for R2
+docker exec clab-ospf-fundamentals-r2 ip addr add 10.0.12.2/30 dev eth1
+docker exec clab-ospf-fundamentals-r2 ip addr add 10.0.23.1/30 dev eth2
+docker exec clab-ospf-fundamentals-r2 ip addr add 2.2.2.2/32 dev lo
+docker exec clab-ospf-fundamentals-r2 ip link set eth1 up
+docker exec clab-ospf-fundamentals-r2 ip link set eth2 up
+
+# Add IPs for R3
+docker exec clab-ospf-fundamentals-r3 ip addr add 10.0.23.2/30 dev eth1
+docker exec clab-ospf-fundamentals-r3 ip addr add 10.0.13.2/30 dev eth2
+docker exec clab-ospf-fundamentals-r3 ip addr add 3.3.3.3/32 dev lo
+docker exec clab-ospf-fundamentals-r3 ip link set eth1 up
+docker exec clab-ospf-fundamentals-r3 ip link set eth2 up
+
+echo "Lab setup complete! Now configure OSPF in vtysh."
+```
 
 ## FRR vs Cisco Command Differences
 
@@ -178,7 +200,6 @@ write memory
 |-----------|-----|
 | `router ospf 1` | `router ospf` |
 | `network 10.0.12.0 0.0.0.3 area 0` | `network 10.0.12.0/30 area 0` |
-| `show ip ospf` | `show ip ospf` (same) |
 
 ## Cleanup
 
@@ -188,17 +209,3 @@ containerlab destroy -t topology.yml --cleanup
 # Or with sudo:
 sudo containerlab destroy -t topology.yml --cleanup
 ```
-
-## Questions to Consider
-
-1. How long does OSPF take to detect a failed neighbor?
-2. What happens to the routing table when a link fails?
-3. How does OSPF choose the best path when multiple paths exist?
-4. What is the purpose of the OSPF router-id?
-
-## Next Steps
-
-- Try adding a fourth router to the topology
-- Experiment with multiple OSPF areas
-- Configure OSPF authentication
-- Test OSPF stub areas
