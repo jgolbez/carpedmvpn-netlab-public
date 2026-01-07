@@ -1,0 +1,44 @@
+name: ospf-lab2-network-types
+
+topology:
+  nodes:
+    r1:
+      kind: linux
+      image: frrouting/frr:v10.1.1
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/r1-frr.conf:/etc/frr/frr.conf
+    
+    r2:
+      kind: linux
+      image: frrouting/frr:v10.1.1
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/r2-frr.conf:/etc/frr/frr.conf
+    
+    r3:
+      kind: linux
+      image: frrouting/frr:v10.1.1
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/r3-frr.conf:/etc/frr/frr.conf
+    
+    r4:
+      kind: linux
+      image: frrouting/frr:v10.1.1
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/r4-frr.conf:/etc/frr/frr.conf
+
+  links:
+    # Hub-spoke topology with R1 as hub
+    # R1-R2 and R1-R3 will be configured as broadcast for DR/BDR demo
+    - endpoints: ["r1:eth1", "r2:eth1"]
+    - endpoints: ["r1:eth2", "r3:eth1"]
+    
+    # R1-R4 will stay as true point-to-point
+    - endpoints: ["r1:eth3", "r4:eth1"]
