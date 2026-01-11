@@ -107,29 +107,6 @@ cd ~/labs/ospf/lab3-ospf-metrics
 sudo containerlab deploy -t topology.yml
 docker exec -it clab-ospf-lab3-metrics-r1 vtysh
 ```
-### Lab 2: OSPF Network Types
-**Path:** `~/labs/ospf/lab2-ospf-network-types/`
-
-**What you'll learn:**
-- Broadcast network type and DR/BDR election
-- Priority manipulation and election control
-- Point-to-point network configuration
-- Point-to-multipoint for hub-spoke topologies
-- LSA differences between network types
-- When to use each network type
-
-**Details:**
-- **Topology:** 4 FRR routers in hub-spoke design
-- **Type:** Type A (build from scratch)
-- **Time:** 75 minutes
-- **Level:** Beginner to Intermediate
-
-**Deploy:**
-```bash
-cd ~/labs/ospf/lab2-ospf-network-types
-sudo containerlab deploy -t topology.yml
-docker exec -it clab-ospf-lab2-network-types-r1 vtysh
-```
 
 ---
 
