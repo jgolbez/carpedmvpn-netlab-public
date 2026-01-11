@@ -31,7 +31,7 @@ A complete containerized OSPF lab environment featuring zero-installation deploy
 
 ## Available Sample Labs
 
-These are 2 of 24 labs from our complete OSPF training curriculum.
+These are 3 of 24 labs from our complete OSPF training curriculum.
 
 ### Lab 1: OSPF Fundamentals
 **Path:** `~/labs/ospf/lab1-ospf-basics/`
@@ -58,6 +58,55 @@ docker exec -it clab-ospf-fundamentals-r1 vtysh
 
 ---
 
+### Lab 2: OSPF Network Types
+**Path:** `~/labs/ospf/lab2-ospf-network-types/`
+
+**What you'll learn:**
+- Broadcast network type and DR/BDR election
+- Priority manipulation and election control
+- Point-to-point network configuration
+- Point-to-multipoint for hub-spoke topologies
+- LSA differences between network types
+- When to use each network type
+
+**Details:**
+- **Topology:** 4 FRR routers in hub-spoke design
+- **Type:** Type A (build from scratch)
+- **Time:** 75 minutes
+- **Level:** Beginner to Intermediate
+
+**Deploy:**
+```bash
+cd ~/labs/ospf/lab2-ospf-network-types
+sudo containerlab deploy -t topology.yml
+docker exec -it clab-ospf-lab2-network-types-r1 vtysh
+```
+
+---
+
+### Lab 3: OSPF Metrics and Path Selection
+**Path:** `~/labs/ospf/lab3-ospf-metrics/`
+
+**What you'll learn:**
+- OSPF cost calculation and formula
+- Manual cost assignment and manipulation
+- Reference bandwidth configuration
+- Path selection based on cost
+- Equal-Cost Multipath (ECMP) load balancing
+- Path preference strategies
+
+**Details:**
+- **Topology:** 4 FRR routers with multiple paths between endpoints
+- **Type:** Type B (pre-configured, observe and modify)
+- **Time:** 60 minutes
+- **Level:** Beginner to Intermediate
+
+**Deploy:**
+```bash
+cd ~/labs/ospf/lab3-ospf-metrics
+sudo containerlab deploy -t topology.yml
+docker exec -it clab-ospf-lab3-metrics-r1 vtysh
+```
 ### Lab 2: OSPF Network Types
 **Path:** `~/labs/ospf/lab2-ospf-network-types/`
 
