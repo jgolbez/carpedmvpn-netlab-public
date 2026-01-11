@@ -1,33 +1,37 @@
 #!/bin/bash
-# Minimal setup script - the containerlab devcontainer image already includes most tools
+# Setup script for Network Lab Environment
+# The containerlab devcontainer image already includes Docker, containerlab, and most tools
 
-echo "=== Setting up Network Lab Environment ==="
+echo "=== Setting up OSPF Training Lab Environment ==="
+echo ""
 
-# Install netlab (the only thing not included in the containerlab image)
-echo "Installing netlab..."
-pip3 install networklab
+# Note: The containerlab devcontainer image already includes:
+# - Docker and Docker-in-Docker
+# - Containerlab
+# - Common networking tools (tcpdump, traceroute, etc.)
 
-# Pre-pull the container images we'll use in labs
-echo "Pre-pulling container images for faster lab startup..."
-docker pull quay.io/frrouting/frr:10.1.0
-docker pull nginx:alpine  
-docker pull haproxy:2.9-alpine
-
-# Create lab directories
-echo "Creating lab directories..."
-mkdir -p ~/labs/{ospf,bgp,loadbalancer}
+# Pre-pull the FRR container image for faster lab startup
+echo "Pre-pulling FRR container image..."
+docker pull frrouting/frr:v10.1.1
 
 echo ""
 echo "=== Setup Complete! ==="
 echo ""
-echo "To test the environment:"
-echo "  bash test-environment.sh"
+echo "Available Labs:"
+echo "  • OSPF Fundamentals (Lab 1)"
+echo "  • OSPF Network Types (Lab 2)"
 echo ""
-echo "To start a lab:"
-echo "  cd ~/labs/ospf"
-echo "  containerlab deploy -t topology.yml"
+echo "To start Lab 1:"
+echo "  cd labs/ospf/lab1-ospf-basics"
+echo "  sudo containerlab deploy -t topology.yml"
 echo ""
-echo "For netlab (BGP lab):"
-echo "  cd ~/labs/bgp"  
-echo "  python3 -m netlab up"
+echo "To start Lab 2:"
+echo "  cd labs/ospf/lab2-ospf-network-types"
+echo "  sudo containerlab deploy -t topology.yml"
+echo ""
+echo "To access a router:"
+echo "  docker exec -it <container-name> vtysh"
+echo ""
+echo "Example:"
+echo "  docker exec -it clab-ospf-fundamentals-r1 vtysh"
 echo ""
