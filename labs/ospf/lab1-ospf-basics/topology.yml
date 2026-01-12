@@ -11,27 +11,27 @@ topology:
       image: quay.io/frrouting/frr:10.1.0
       mgmt-ipv4: 172.20.0.11
       binds:
-        - r1-frr.conf:/etc/frr/frr.conf
-        - daemons:/etc/frr/daemons
-        - vtysh.conf:/etc/frr/vtysh.conf
+        - configs/r1-frr.conf:/etc/frr/frr.conf
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
     
     r2:
       kind: linux
       image: quay.io/frrouting/frr:10.1.0
       mgmt-ipv4: 172.20.0.12
       binds:
-        - r2-frr.conf:/etc/frr/frr.conf
-        - daemons:/etc/frr/daemons
-        - vtysh.conf:/etc/frr/vtysh.conf
+        - configs/r2-frr.conf:/etc/frr/frr.conf
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
     
     r3:
       kind: linux
       image: quay.io/frrouting/frr:10.1.0
       mgmt-ipv4: 172.20.0.13
       binds:
-        - r3-frr.conf:/etc/frr/frr.conf
-        - daemons:/etc/frr/daemons
-        - vtysh.conf:/etc/frr/vtysh.conf
+        - configs/r3-frr.conf:/etc/frr/frr.conf
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
 
   links:
     # Create a triangle topology
