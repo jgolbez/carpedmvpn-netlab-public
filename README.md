@@ -364,8 +364,6 @@ The underlying tools used in these labs (Containerlab, FRRouting, Docker) are op
 **For Purchase:**
 - Individual Course License
 
-**Contact:** [Your contact information]
-
 ---
 
 ## Troubleshooting
