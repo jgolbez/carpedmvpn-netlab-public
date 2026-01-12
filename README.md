@@ -22,7 +22,6 @@ A complete containerized OSPF lab environment featuring zero-installation deploy
 - Deploy labs in under 60 seconds
 
 **Professional Curriculum:**
-- Based on CCNP ENARSI exam topics
 - Type A labs (build from scratch) and Type B labs (observe and modify)
 - Hands-on configuration, not just reading
 - Designed for monetizable training courses
