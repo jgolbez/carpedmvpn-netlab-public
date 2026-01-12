@@ -4,19 +4,24 @@
 Learn OSPF basics by observing and modifying a pre-configured OSPF topology with 3 routers.
 
 ## Topology
+
 ```
-     r1                     r2
-  1.1.1.1/32            2.2.2.2/32
-     eth1: .1---------.2 :eth1
-         10.0.12.0/30
-     eth2: .1     eth2: .1
-           |            |
-    10.0.13.0/30  10.0.23.0/30
-           |            |
-     eth2: .2     eth1: .2
-            \    r3     /
-             3.3.3.3/32
+      R2
+     /  \
+   R1----R3
 ```
+
+**R1:** 1.1.1.1/32
+- eth1: 10.0.12.1/30 (to R2)
+- eth2: 10.0.13.1/30 (to R3)
+
+**R2:** 2.2.2.2/32
+- eth1: 10.0.12.2/30 (to R1)
+- eth2: 10.0.23.1/30 (to R3)
+
+**R3:** 3.3.3.3/32
+- eth1: 10.0.23.2/30 (to R2)
+- eth2: 10.0.13.2/30 (to R1)
 
 ## Pre-configured Setup
 
@@ -45,7 +50,8 @@ This lab comes with:
 ## Lab Tasks
 
 ### Task 1: Explore the Working OSPF Network
-#### After deploying OSPF to all routers and including Loopback interfaces:
+
+After deploying OSPF to all routers with loopback interfaces included:
 
 1. Check OSPF neighbors (should see 2 on each router):
    ```
@@ -235,6 +241,14 @@ sudo containerlab destroy -t topology.yml --cleanup
 3. How does OSPF determine the best path when multiple exist?
 4. What is the purpose of areas in OSPF?
 5. How long does it take OSPF to detect a dead neighbor?
+
+### Answers
+
+1. OSPF uses router-id to uniquely identify routers in the OSPF domain, independent of IP addresses which may change
+2. OSPF adjacencies may fail or become unstable; routers won't know which LSAs to trust, potentially causing routing loops or inconsistencies
+3. OSPF uses cost (calculated from bandwidth) as the metric - lowest total cost wins. Manual cost configuration can override calculated values.
+4. Areas reduce LSA flooding (improving scalability), allow route summarization at ABRs, and enable hierarchical network design
+5. Dead timer (default 40 seconds on broadcast networks, 4 times the hello interval of 10 seconds)
 
 ## Next Steps
 
