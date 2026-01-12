@@ -4,6 +4,7 @@
 Learn how OSPF calculates costs and selects paths by observing multiple routes, manipulating costs, and implementing path preferences.
 
 ## Topology
+
 ```
         R2
        /  \
@@ -12,30 +13,30 @@ Learn how OSPF calculates costs and selects paths by observing multiple routes, 
       \    /
        \  /
         R3
-
-R1: 1.1.1.1/32
-  eth1: 10.0.12.1/30 (to R2)
-  eth2: 10.0.13.1/30 (to R3)
-  eth3: 10.0.14.1/30 (to R4 direct)
-
-R2: 2.2.2.2/32
-  eth1: 10.0.12.2/30 (to R1)
-  eth2: 10.0.24.1/30 (to R4)
-
-R3: 3.3.3.3/32
-  eth1: 10.0.13.2/30 (to R1)
-  eth2: 10.0.34.1/30 (to R4)
-
-R4: 4.4.4.4/32
-  eth1: 10.0.24.2/30 (to R2)
-  eth2: 10.0.34.2/30 (to R3)
-  eth3: 10.0.14.2/30 (to R1 direct)
 ```
 
+**R1:** 1.1.1.1/32
+- eth1: 10.0.12.1/30 (to R2)
+- eth2: 10.0.13.1/30 (to R3)
+- eth3: 10.0.14.1/30 (to R4 direct)
+
+**R2:** 2.2.2.2/32
+- eth1: 10.0.12.2/30 (to R1)
+- eth2: 10.0.24.1/30 (to R4)
+
+**R3:** 3.3.3.3/32
+- eth1: 10.0.13.2/30 (to R1)
+- eth2: 10.0.34.1/30 (to R4)
+
+**R4:** 4.4.4.4/32
+- eth1: 10.0.24.2/30 (to R2)
+- eth2: 10.0.34.2/30 (to R3)
+- eth3: 10.0.14.2/30 (to R1 direct)
+
 **Three paths from R1 to R4:**
-- Path 1: R1 → R2 → R4 (2 hops)
-- Path 2: R1 → R3 → R4 (2 hops)
-- Path 3: R1 → R4 (1 hop, direct)
+- Path 1: R1 -> R2 -> R4 (2 hops)
+- Path 2: R1 -> R3 -> R4 (2 hops)
+- Path 3: R1 -> R4 (1 hop, direct)
 
 ## Pre-configured Setup
 
@@ -116,18 +117,18 @@ This lab comes with:
 3. **Calculate costs for paths from R1 to R4:**
    
    **Path 1 (via R2):**
-   - R1 → R2: Cost 10 (eth1)
-   - R2 → R4: Cost 10 (eth2)
+   - R1 -> R2: Cost 10 (eth1)
+   - R2 -> R4: Cost 10 (eth2)
    - **Total: 20**
    
    **Path 2 (via R3):**
-   - R1 → R3: Cost 10 (eth2)
-   - R3 → R4: Cost 10 (eth2)
+   - R1 -> R3: Cost 10 (eth2)
+   - R3 -> R4: Cost 10 (eth2)
    - **Total: 20**
    
    **Path 3 (direct):**
-   - R1 → R4: Cost 10 (eth3)
-   - **Total: 10** ← Best path!
+   - R1 -> R4: Cost 10 (eth3)
+   - **Total: 10** <- Best path!
 
 4. **Verify your calculations:**
    ```
@@ -235,7 +236,7 @@ This lab comes with:
    traceroute 4.4.4.4 -s 1.1.1.1
    ```
    
-   Should go: R1 → R2 → R4
+   Should go: R1 -> R2 -> R4
 
 ### Task 6: Adjust Reference Bandwidth
 
@@ -388,9 +389,9 @@ When multiple paths have the same cost:
 
 ### Benefits
 
-- ✅ Better bandwidth utilization
-- ✅ Automatic failover if one path fails
-- ✅ No configuration needed (automatic)
+- Better bandwidth utilization
+- Automatic failover if one path fails
+- No configuration needed (automatic)
 
 ### Verifying ECMP
 
