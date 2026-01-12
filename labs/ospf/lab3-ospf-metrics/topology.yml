@@ -4,7 +4,7 @@ topology:
   nodes:
     r1:
       kind: linux
-      image: frrouting/frr:v10.1.1
+      image: quay.io/frrouting/frr:10.1.0
       binds:
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
@@ -12,7 +12,7 @@ topology:
     
     r2:
       kind: linux
-      image: frrouting/frr:v10.1.1
+      image: quay.io/frrouting/frr:10.1.0
       binds:
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
@@ -20,7 +20,7 @@ topology:
     
     r3:
       kind: linux
-      image: frrouting/frr:v10.1.1
+      image: quay.io/frrouting/frr:10.1.0
       binds:
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
@@ -28,7 +28,7 @@ topology:
     
     r4:
       kind: linux
-      image: frrouting/frr:v10.1.1
+      image: quay.io/frrouting/frr:10.1.0
       binds:
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
