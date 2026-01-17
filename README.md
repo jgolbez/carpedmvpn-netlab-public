@@ -121,7 +121,7 @@ docker exec -it clab-ospf-lab3-metrics-r1 vtysh
 
 3. **Navigate to a lab:**
    ```bash
-   cd ~/labs/ospf/lab1-ospf-basics
+   cd labs/ospf/lab1-ospf-basics
    ```
 
 4. **Deploy the lab:**
@@ -196,7 +196,7 @@ sudo containerlab deploy -t topology.yml
 ### Deploying Labs
 ```bash
 # Navigate to lab directory
-cd ~/labs/ospf/lab1-ospf-basics
+cd labs/ospf/lab1-ospf-basics
 
 # Deploy the lab
 sudo containerlab deploy -t topology.yml
