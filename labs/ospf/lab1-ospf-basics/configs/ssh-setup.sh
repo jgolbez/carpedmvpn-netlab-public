@@ -45,7 +45,12 @@ alias v='vtysh'
 
 # Welcome message
 echo "Welcome to FRR Router Lab"
-echo "Type 'vtysh' or 'v' to access router CLI"
+
+# Auto-launch vtysh on login (like a real router)
+# Only if this is an interactive SSH session
+if [ -n "$SSH_CONNECTION" ] && [ -t 0 ]; then
+    exec vtysh
+fi
 EOF
 
 # Set proper ownership
