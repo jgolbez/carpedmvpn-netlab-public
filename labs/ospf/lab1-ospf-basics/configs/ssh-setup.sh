@@ -1,26 +1,37 @@
-#!/bin/bash
-# SSH setup script for FRR containers
+#!/bin/sh
+# SSH setup script for FRR containers (Alpine Linux)
 # Enables SSH access for students with direct vtysh access
 
-# Update and install required packages
-apt-get update
-apt-get install -y openssh-server sudo bash nano
+# Update package index and install required packages
+apk update
+apk add --no-cache openssh sudo bash nano shadow
 
 # Create SSH run directory
 mkdir -p /run/sshd
 
+# Generate host keys if they don't exist
+ssh-keygen -A
+
 # Enable password authentication
 sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Allow root login for SSH (Alpine default might have this disabled)
+sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 # Create user with bash as default shell
-useradd -m -s /bin/bash demo
-echo 'demo:demo' | chpasswd
+adduser -D -s /bin/bash demo
+echo "demo:demo" | chpasswd
 
-# Add to sudo group for privileged operations
-usermod -aG sudo demo
+# Create sudo group if it doesn't exist and add demo to it
+addgroup sudo 2>/dev/null || true
+adduser demo sudo
 
 # Add to frrvty group for direct vtysh access (no sudo needed)
-usermod -aG frrvty demo
+adduser demo frrvty
+
+# Configure sudo to allow sudo group without password prompt
+echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 # Create a basic .bashrc file for demo user
 cat > /home/demo/.bashrc << 'EOF'
@@ -40,5 +51,17 @@ EOF
 # Set proper ownership
 chown demo:demo /home/demo/.bashrc
 
-# Start SSH daemon
-/usr/sbin/sshd -D &
+# Start SSH daemon in background
+# Use nohup to keep it running after script exits
+nohup /usr/sbin/sshd -D > /var/log/sshd.log 2>&1 &
+
+# Give SSH a moment to start
+sleep 2
+
+# Verify it started
+if pgrep sshd > /dev/null; then
+    echo "SSH daemon started successfully"
+else
+    echo "WARNING: SSH daemon may not have started"
+    cat /var/log/sshd.log
+fi
