@@ -14,6 +14,10 @@ topology:
         - configs/r1-frr.conf:/etc/frr/frr.conf
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/ssh-setup.sh:ssh-setup.sh
+      exec:
+        - chmod +x /ssh-setup.sh
+        - /ssh-setup.sh
     
     r2:
       kind: linux
@@ -23,7 +27,10 @@ topology:
         - configs/r2-frr.conf:/etc/frr/frr.conf
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
-    
+            - configs/ssh-setup.sh:ssh-setup.sh
+      exec:
+        - chmod +x /ssh-setup.sh
+        - /ssh-setup.sh
     r3:
       kind: linux
       image: quay.io/frrouting/frr:10.1.0
@@ -32,7 +39,10 @@ topology:
         - configs/r3-frr.conf:/etc/frr/frr.conf
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
-
+        - configs/ssh-setup.sh:ssh-setup.sh
+      exec:
+        - chmod +x /ssh-setup.sh
+        - /ssh-setup.sh
   links:
     # Create a triangle topology
     - endpoints: ["r1:eth1", "r2:eth1"]
