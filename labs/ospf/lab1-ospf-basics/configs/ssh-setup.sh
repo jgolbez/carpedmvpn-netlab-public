@@ -19,22 +19,22 @@ sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_c
 # Allow root login for SSH (Alpine default might have this disabled)
 sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
-# Create user with bash as default shell
-adduser -D -s /bin/bash demo
-echo "demo:demo" | chpasswd
+# Create admin user with bash as default shell
+adduser -D -s /bin/bash admin
+echo "admin:admin" | chpasswd
 
-# Create sudo group if it doesn't exist and add demo to it
+# Create sudo group if it doesn't exist and add admin to it
 addgroup sudo 2>/dev/null || true
-adduser demo sudo
+adduser admin sudo
 
 # Add to frrvty group for direct vtysh access (no sudo needed)
-adduser demo frrvty
+adduser admin frrvty
 
 # Configure sudo to allow sudo group without password prompt
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# Create a basic .bashrc file for demo user
-cat > /home/demo/.bashrc << 'EOF'
+# Create a basic .bashrc file for admin user
+cat > /home/admin/.bashrc << 'EOF'
 # Custom prompt with router context
 export PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 
@@ -49,7 +49,7 @@ echo "Type 'vtysh' or 'v' to access router CLI"
 EOF
 
 # Set proper ownership
-chown demo:demo /home/demo/.bashrc
+chown admin:admin /home/admin/.bashrc
 
 # Start SSH daemon in background
 # Use nohup to keep it running after script exits
