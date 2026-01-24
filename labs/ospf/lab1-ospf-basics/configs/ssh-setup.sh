@@ -45,16 +45,24 @@ alias v='vtysh'
 
 # Welcome message
 echo "Welcome to FRR Router Lab"
+EOF
 
-# Auto-launch vtysh on login (like a real router)
-# Only if this is an interactive SSH session
-if [ -n "$SSH_CONNECTION" ] && [ -t 0 ]; then
+# Create .profile for login shells (SSH uses login shells)
+cat > /home/admin/.profile << 'EOF'
+# Source .bashrc if it exists
+if [ -f "$HOME/.bashrc" ]; then
+    . "$HOME/.bashrc"
+fi
+
+# Auto-launch vtysh on SSH login (like a real router)
+if [ -n "$SSH_CONNECTION" ]; then
     exec vtysh
 fi
 EOF
 
 # Set proper ownership
 chown admin:admin /home/admin/.bashrc
+chown admin:admin /home/admin/.profile
 
 # Start SSH daemon in background
 # Use nohup to keep it running after script exits
