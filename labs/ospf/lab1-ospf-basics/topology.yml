@@ -14,7 +14,7 @@ topology:
         - configs/r1-frr.conf:/etc/frr/frr.conf
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
-        - configs/ssh-setup.sh:ssh-setup.sh
+        - configs/ssh-setup.sh:/ssh-setup.sh
       exec:
         - chmod +x /ssh-setup.sh
         - /ssh-setup.sh
@@ -27,7 +27,7 @@ topology:
         - configs/r2-frr.conf:/etc/frr/frr.conf
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
-            - configs/ssh-setup.sh:ssh-setup.sh
+        - configs/ssh-setup.sh:/ssh-setup.sh
       exec:
         - chmod +x /ssh-setup.sh
         - /ssh-setup.sh
@@ -39,7 +39,7 @@ topology:
         - configs/r3-frr.conf:/etc/frr/frr.conf
         - configs/daemons:/etc/frr/daemons
         - configs/vtysh.conf:/etc/frr/vtysh.conf
-        - configs/ssh-setup.sh:ssh-setup.sh
+        - configs/ssh-setup.sh:/ssh-setup.sh
       exec:
         - chmod +x /ssh-setup.sh
         - /ssh-setup.sh
