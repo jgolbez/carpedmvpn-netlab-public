@@ -368,7 +368,7 @@ carpedmvpn-netlab-public/
 | Platform | Monthly Cost | Setup Time | Notes |
 |----------|-------------|------------|-------|
 | **This Solution** | **$0** | **1 minute** | Browser-based, no installation |
-| Cisco CML | $199+ | 2-4 hours | Official Cisco, expensive |
+| Cisco CML | $199+ | 2-4 hours | Official Cisco |
 | EVE-NG Pro | ~$100/year | 2-4 hours | Popular choice, setup required |
 | GNS3 Cloud | $50+ | 1-2 hours | Good features, still costs money |
 | Physical Lab | $1000s+ | Days | Real hardware, very expensive |
