@@ -891,29 +891,120 @@ containerlab destroy -t topology.yml --cleanup
 sudo containerlab destroy -t topology.yml --cleanup
 ```
 
-## Challenge Questions
+## What You Should Have Learned
 
-1. Why does OSPF use cost instead of hop count?
-2. What happens if you set different reference bandwidths on different routers?
-3. How many equal-cost paths can OSPF use simultaneously?
-4. What's the minimum OSPF cost value? Why?
-5. If R1-R4 direct link is 1 Gbps but R1-R2-R4 path is 10 Gbps, how would you make OSPF prefer the faster path?
-6. What happens to existing OSPF neighbors when you change the reference bandwidth?
-7. Why is it recommended to set reference bandwidth network-wide?
+After completing this lab, you should be able to:
 
-### Answers
+**Cost Fundamentals:**
+- [ ] Explain why OSPF uses cost instead of hop count
+- [ ] Describe the OSPF cost formula: Reference Bandwidth / Interface Bandwidth
+- [ ] Calculate OSPF cost for different interface speeds
+- [ ] Understand why the minimum cost is 1
+- [ ] Explain the purpose of reference bandwidth
 
-1. Cost allows considering link speed/quality, not just number of hops (a 10 Gbps 3-hop path may be better than 10 Mbps 1-hop)
-2. Routing inconsistencies - routers calculate costs differently, may create suboptimal paths or loops
-3. FRR defaults to 64, configurable with `maximum-paths`
-4. Minimum is 1 - ensures all links have at least some cost
-5. Set manual costs: direct link `ip ospf cost 100`, 10G path links `ip ospf cost 10` each
-6. Nothing - cost change doesn't affect neighbor relationships, only routing decisions
-7. Ensures consistent cost calculation across network, prevents routing anomalies
+**Cost Calculation:**
+- [ ] Calculate path cost across multiple hops
+- [ ] Predict which path OSPF will choose given multiple options
+- [ ] Identify why fast links (1G+) all get cost 1 with default settings
+- [ ] Understand the impact of reference bandwidth on cost calculations
+- [ ] Explain why reference bandwidth must be consistent across all routers
+
+**Manual Cost Assignment:**
+- [ ] Configure manual cost on an interface using `ip ospf cost`
+- [ ] Override automatic cost calculation for traffic engineering
+- [ ] Implement primary/backup link scenarios using cost
+- [ ] Force traffic through specific paths using cost manipulation
+- [ ] Understand when manual cost is appropriate vs. automatic
+
+**Equal-Cost Multipath (ECMP):**
+- [ ] Explain how OSPF handles multiple equal-cost paths
+- [ ] Identify when ECMP will activate (exact cost match required)
+- [ ] Understand per-flow vs per-packet load balancing
+- [ ] Calculate effective bandwidth with ECMP
+- [ ] Recognize ECMP in routing table output
+
+**Reference Bandwidth:**
+- [ ] Configure reference bandwidth using `auto-cost reference-bandwidth`
+- [ ] Choose appropriate reference bandwidth for modern networks
+- [ ] Understand the impact of mismatched reference bandwidth
+- [ ] Explain why changing reference bandwidth doesn't break adjacencies
+- [ ] Calculate costs with non-default reference bandwidth
+
+**Path Selection:**
+- [ ] Trace OSPF path selection through multiple routers
+- [ ] Use `show ip ospf route` to see SPF calculation results
+- [ ] Verify path selection with `traceroute`
+- [ ] Understand outbound cost calculation
+- [ ] Recognize when OSPF will not load-balance (unequal costs)
+
+**Practical Skills:**
+- [ ] Modify costs to influence path selection
+- [ ] Implement traffic engineering using cost
+- [ ] Troubleshoot unexpected path selection
+- [ ] Verify cost configuration with `show ip ospf interface`
+- [ ] Compare automatic vs manual cost assignment
+
+**Design Understanding:**
+- [ ] Explain why cost is per-interface, not per-path
+- [ ] Understand asymmetric routing caused by different costs
+- [ ] Recognize the limitations of static cost metrics
+- [ ] Compare OSPF cost to other routing metrics (hop count, delay)
+- [ ] Explain the trade-offs between automatic and manual cost
+
+---
+
+## Deep Dive: RFC 2328 Key Concepts
+
+**If you want to understand OSPF metrics deeply, these RFC sections are essential:**
+
+- **Section 2 (Key Concepts):** Definition of cost and its role in shortest path calculation
+- **Section 16.1 (Calculating the shortest-path tree):** How Dijkstra's algorithm uses cost to build the SPF tree
+- **Section 16.2 (The next hop calculation):** How multiple equal-cost paths are identified
+- **Appendix C.3 (Configurable Constants):** Default cost values and recommendations
+
+**Read the RFC at:** https://datatracker.ietf.org/doc/html/rfc2328
+
+**Particularly relevant passages:**
+
+**On cost definition (Section 2):**
+> "A cost is associated with the output side of each router interface. This cost is configurable by the system administrator. The lower the cost, the more likely the interface is to be used to forward data traffic."
+
+**On cost flexibility:**
+> "OSPF allows separate metrics to be configured for different Types of Service (TOS). TOS-based routing has not been widely implemented, and this document describes only TOS 0 routing."
+
+**On equal-cost paths (Section 11):**
+> "When there are multiple paths of equal cost to a destination, traffic can be distributed equally among the multiple paths (called equal-cost multipath)."
+
+**On cost calculation (Appendix C.3):**
+> "The TOS 0 metric must be set to a value greater than 0. A cost of 1 is appropriate for most networks."
+
+---
 
 ## Next Steps
 
-- Explore multi-area OSPF with inter-area cost calculations
-- Implement traffic engineering with cost manipulation
-- Study OSPF convergence time with different costs
-- Try asymmetric routing scenarios
+Now that you understand OSPF metrics and path selection, you can explore:
+
+- **Lab 4 (Future):** Multi-area OSPF - How costs work across area boundaries
+- **Advanced topic:** OSPF traffic engineering - Complex cost manipulation for specific traffic flows
+- **Advanced topic:** Fast reroute and convergence optimization
+- **Advanced topic:** OSPF vs IS-IS metrics - Comparing link-state protocols
+
+---
+
+## Reflection Questions
+
+After completing this lab, consider:
+
+1. **100 Gbps datacenter problem:** You have a datacenter with 100 Gbps links between spine and leaf routers. With default OSPF settings, these links get cost 1 (same as 100 Mbps). What reference bandwidth would you set? What happens to existing costs on slower links when you make this change? Is it disruptive?
+
+2. **Primary vs backup WAN links:** You have two links from your branch office to headquarters: a primary 1 Gbps metro Ethernet (flat rate) and a backup 1 Gbps cellular link ($10/GB). Both get the same automatic cost. How would you configure costs to use cellular only when metro Ethernet fails? What cost values would you choose and why?
+
+3. **Asymmetric routing implications:** You configure R1→R2 with cost 10 and R2→R1 with cost 100. Traffic from R1 to R2 uses this link, but return traffic from R2 to R1 takes a different path. What problems might this cause? When would asymmetric routing be intentional and beneficial?
+
+4. **ECMP limitations:** You have three paths: Path A (cost 10), Path B (cost 10), Path C (cost 11). OSPF uses A and B with ECMP, completely ignoring C. Path C is actually higher bandwidth than A or B. How would you modify costs to include all three paths? What are the implications of making this change?
+
+5. **Dynamic vs static metrics:** OSPF cost is static (or administratively changed). Modern networks have dynamic conditions - congestion, failures, varying latency. Why doesn't OSPF automatically adjust costs based on current link utilization or latency? What technologies provide dynamic path selection?
+
+6. **Consistency requirement:** Why does OSPF require the same reference bandwidth on all routers? What specific problems occur if Router A uses 100 and Router B uses 10000? Can you think of a scenario where intentionally inconsistent reference bandwidth might be useful (even if problematic)?
+
+---
