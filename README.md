@@ -19,7 +19,7 @@ A complete containerized OSPF lab environment featuring zero-installation deploy
 - No local setup required
 - Runs entirely in GitHub Codespaces
 - Students need only a web browser
-- Deploy labs in under 60 seconds
+- Deploy labs in under 3 minutes
 
 **Visual Interactive Interface:**
 - VSCode Containerlab extension provides graphical topology view
