@@ -106,7 +106,7 @@ These are 3 of 24 labs from our complete OSPF training curriculum.
    
    [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jgolbez/carpedmvpn-netlab-public)
 
-2. **Wait ~60 seconds** for initialization
+2. **Wait ~3 minutes** for initialization
 
 3. **Navigate to a lab:**
    ```bash
