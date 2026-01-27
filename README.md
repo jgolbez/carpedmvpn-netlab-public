@@ -1,7 +1,7 @@
 # Vendor-Neutral OSPF Training Labs
 
 > **Free sample labs** demonstrating our professional vendor-neutral network training curriculum.  
-> Full OSPF course with 24+ comprehensive labs available for purchase.
+> Full OSPF course with 24+ comprehensive labs available soon.
 
 A complete containerized OSPF lab environment featuring zero-installation deployment via GitHub Codespaces, visual topology interface with one-click router access, and curriculum designed for enterprise network training.
 
