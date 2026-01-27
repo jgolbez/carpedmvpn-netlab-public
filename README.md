@@ -283,13 +283,6 @@ The Containerlab extension provides a visual, interactive way to work with your 
 6. Enter password: `admin` (username auto-filled)
 7. You're immediately in the router CLI
 
-**Why This Matters:**
-- No need to remember long `docker exec` commands
-- Visual representation helps understand topology
-- Faster workflow for multi-router configurations
-- More intuitive for students new to containerized labs
-- Works the same in Codespaces and local VSCode
-
 **Alternative Access Methods:**
 - **SSH directly:** `ssh admin@<container-name>`
 - **Docker exec:** `docker exec -it <container-name> vtysh`
