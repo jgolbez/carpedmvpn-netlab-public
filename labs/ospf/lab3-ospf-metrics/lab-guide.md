@@ -332,7 +332,9 @@ Configure costs to match:
 ### Before OSPF (RIP era - 1980s)
 
 **Metric:** Hop count only
+
 **Problem:** Can't express link quality
+
 **Result:** Suboptimal routing
 
 **Example:**
