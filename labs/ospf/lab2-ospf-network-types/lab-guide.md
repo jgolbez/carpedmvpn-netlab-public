@@ -1,6 +1,7 @@
 # Lab 2 Theory Section - OSPF Network Types
 
-This section should be inserted after the "Objective" and before "Topology" in Lab 2.
+Objective
+Learn how OSPF behaves on different network types (broadcast, point-to-point, point-to-multipoint) by configuring and observing DR/BDR election and LSA generation.
 
 ---
 
