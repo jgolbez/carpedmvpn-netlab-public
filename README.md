@@ -31,7 +31,7 @@ A complete containerized OSPF lab environment featuring zero-installation deploy
 - Type A labs (build from scratch) and Type B labs (observe and modify)
 - Hands-on configuration, not just reading
 - Theory-first approach with RFC references
-- Designed for monetizable training courses
+- Designed for easy, cheap training
 
 ---
 
