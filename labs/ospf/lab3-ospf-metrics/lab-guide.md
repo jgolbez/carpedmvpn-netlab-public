@@ -3,6 +3,417 @@
 ## Objective
 Learn how OSPF calculates costs and selects paths by observing multiple routes, manipulating costs, and implementing path preferences.
 
+# Lab 3 Theory Section - OSPF Metrics and Path Selection
+
+---
+
+## The Problem: Hop Count Isn't Enough
+
+### RIP's Metric Limitation
+
+In the 1980s, RIP (Routing Information Protocol) used a simple metric: **hop count**. Every link = 1 hop, regardless of speed or quality.
+
+**This created absurd scenarios:**
+
+**Scenario 1: The Slow "Short" Path**
+```
+        [10 Mbps]
+    A -------------- B     (1 hop, preferred by RIP)
+
+    A -- [1 Gbps] -- C -- [1 Gbps] -- B     (2 hops, ignored by RIP)
+```
+RIP would choose the 10 Mbps direct path over the 1 Gbps path through C, even though the faster path could transfer data 100x faster.
+
+**Scenario 2: The Congested Link**
+```
+    A ---------- B     (1 hop, 99% utilized)
+    
+    A -- C -- D -- B   (3 hops, 10% utilized)
+```
+RIP would send all traffic over the congested link, ignoring the available capacity on the longer path.
+
+**The fundamental flaw:** Hop count treats all links as equal. A satellite link with 500ms latency = a fiber link with 1ms latency = a congested link = a pristine link. All are "1 hop."
+
+---
+
+## The Solution: Cost-Based Metrics
+
+OSPF introduced a revolutionary concept: **administrators define what "cost" means**.
+
+RFC 2328 deliberately made this flexible:
+
+> "A cost is associated with the output side of each router interface. This cost is configurable by the system administrator. The lower the cost, the more likely the interface is to be used to forward data traffic."
+
+**The genius of this design:**
+- Cost can represent bandwidth
+- Cost can represent monetary expense
+- Cost can represent latency
+- Cost can represent administrative policy
+- **Cost can represent whatever matters to YOU**
+
+---
+
+## The Cisco Standard: Bandwidth-Based Cost
+
+While RFC 2328 left cost calculation open, Cisco established a de facto standard:
+
+```
+Cost = Reference Bandwidth / Interface Bandwidth
+```
+
+**Default reference bandwidth:** 100 Mbps
+
+**Example calculations:**
+- 10 Mbps Ethernet: 100/10 = **10**
+- 100 Mbps FastEthernet: 100/100 = **1**
+- 1 Gbps GigabitEthernet: 100/1000 = 0.1 → **1** (minimum)
+- 10 Gbps 10GigE: 100/10000 = 0.01 → **1** (minimum)
+
+**Why this formula?**
+- Higher bandwidth = lower cost (more desirable)
+- Automatically adapts to interface speed
+- Intuitive: faster links are preferred
+- Predictable: same interface types get same cost
+
+---
+
+## The Modern Problem: Fast Interfaces
+
+The default reference bandwidth (100 Mbps) was fine in 1998 when FastEthernet was cutting-edge. In 2026, it's obsolete.
+
+**The issue:**
+
+With default settings, these all get cost 1:
+- 100 Mbps FastEthernet
+- 1 Gbps GigabitEthernet  
+- 10 Gbps 10GigE
+- 100 Gbps 100GigE
+- 400 Gbps 400GigE
+
+**OSPF can't differentiate between them!**
+
+### Real-World Impact
+
+**Scenario: Datacenter with mixed speeds**
+```
+           [1 Gbps, Cost 1]
+    R1 ----------------------- R2
+           
+    R1 -- [100 Gbps, Cost 1] -- R3 -- [100 Gbps, Cost 1] -- R2
+```
+
+OSPF sees:
+- Direct path: Cost 1
+- Via R3: Cost 2
+
+**Result:** OSPF chooses the 1 Gbps link, ignoring the 100 Gbps path, because it can't tell them apart!
+
+---
+
+## The Solution: Increase Reference Bandwidth
+
+RFC 2328 anticipated this:
+
+> "The TOS 0 metric must be set to a value greater than 0. A cost of 1 is appropriate for most networks."
+
+Modern networks need modern reference bandwidth:
+
+```
+router ospf
+ auto-cost reference-bandwidth 100000
+```
+
+**This changes calculations:**
+- 1 Gbps: 100000/1000 = **100**
+- 10 Gbps: 100000/10000 = **10**
+- 100 Gbps: 100000/100000 = **1**
+
+**Now OSPF can differentiate!**
+
+**Critical rule:** Configure the same reference bandwidth on **ALL routers** in the OSPF domain. Mismatched reference bandwidth causes routing inconsistencies.
+
+---
+
+## Manual Cost Assignment: Traffic Engineering
+
+Sometimes you don't want automatic cost calculation. You want to **force** traffic to take a specific path.
+
+**Use cases:**
+
+### Use Case 1: Backup Link
+```
+    A -- [Primary, 1 Gbps] -- B
+    A -- [Backup, 1 Gbps] -- B
+```
+
+Both are 1 Gbps, but you want primary for normal traffic and backup only for failover:
+
+```
+interface backup-link
+ ip ospf cost 1000
+```
+
+Now backup is only used if primary fails.
+
+### Use Case 2: Expensive Link
+
+```
+    A -- [Metro Fiber, cheap] -- B
+    A -- [Satellite, $$$] -- B
+```
+
+Satellite might have higher bandwidth, but you pay per GB:
+
+```
+interface satellite-link
+ ip ospf cost 10000
+```
+
+Use satellite only when fiber fails.
+
+### Use Case 3: Administrative Preference
+
+```
+    A -- [Through secure datacenter] -- B
+    A -- [Through public internet] -- B
+```
+
+Security policy requires traffic through datacenter:
+
+```
+interface internet-link
+ ip ospf cost 5000
+```
+
+**The power:** Manual cost gives you complete control over path selection.
+
+---
+
+## Equal-Cost Multipath (ECMP)
+
+What happens when multiple paths have the **same** cost?
+
+**OSPF's answer:** Use them all!
+
+RFC 2328:
+> "When multiple equal-cost routes to a destination exist, traffic can be distributed equally among them."
+
+### How ECMP Works
+
+**Example:**
+```
+        [Cost 10]
+    R1 ------------ R2
+        [Cost 10]
+    R1 ------------ R3
+    
+    Both paths to R2: Cost 10
+```
+
+**OSPF behavior:**
+1. SPF algorithm finds both paths
+2. Both paths installed in routing table
+3. Router load-balances across both links
+4. Per-flow load balancing (same flow = same path for consistency)
+
+### ECMP Benefits
+
+**Bandwidth multiplication:**
+- 2x 10 Gbps links = 20 Gbps effective throughput
+- Automatic without configuration
+
+**Automatic failover:**
+- If one path fails, traffic instantly moves to remaining path
+- No reconvergence needed for the working path
+
+**No configuration needed:**
+- If costs are equal, ECMP happens automatically
+- Works with up to 64 paths (FRR default)
+
+### The Catch
+
+**ECMP only works with EQUAL costs!**
+
+```
+Path A: Cost 20
+Path B: Cost 21   ← Not used, even if it's 1 away!
+```
+
+OSPF doesn't do "good enough" routing - it's always optimal path(s) or nothing.
+
+---
+
+## Cost Calculation Deep Dive
+
+### The Formula in Detail
+
+```
+OSPF Cost = Reference Bandwidth (Mbps) / Interface Bandwidth (Mbps)
+```
+
+**Important notes:**
+- Result is rounded (no decimal costs)
+- Minimum cost is 1
+- Maximum cost is 65,535
+- Calculated per interface
+- Only affects outbound traffic (cost is on output interface)
+
+### Example Network
+
+```
+    R1 [10G] -- [10G] R2 [1G] -- [1G] R3
+```
+
+**With reference bandwidth 10000 (10 Gbps):**
+
+**R1's perspective (reaching R3):**
+- R1 → R2: Cost 10000/10000 = **1** (local 10G interface)
+- R2 → R3: Cost 10000/1000 = **10** (R2's 1G interface)
+- **Total cost from R1 to R3: 11**
+
+**Key insight:** Cost is calculated on the **outbound** interface. R1 doesn't care that R2 has a 1G interface until traffic is leaving R2 toward R3.
+
+---
+
+## Asymmetric Routing
+
+Because cost is per-interface and per-direction, you can have different costs in each direction:
+
+```
+    R1 [Cost 10] --> R2
+    R1 <-- [Cost 100] R2
+```
+
+**Result:**
+- R1 → R2 traffic: Uses this link (cost 10)
+- R2 → R1 traffic: Might use different path (this link costs 100 from R2's perspective)
+
+**Use case:** Satellite link with asymmetric bandwidth:
+- Downlink: 50 Mbps (low cost)
+- Uplink: 5 Mbps (high cost)
+
+Configure costs to match:
+- Downlink interface: Low cost (encourage use)
+- Uplink interface: High cost (discourage use)
+
+---
+
+## Cost vs. Other Metrics
+
+### Why Not Use Latency?
+
+**Latency changes dynamically:**
+- Network congestion
+- Processing delays
+- Queuing delays
+
+**OSPF cost is static (or administratively changed):**
+- Prevents routing instability
+- No flapping between paths
+- Predictable behavior
+
+**If you need dynamic latency-based routing:** Use traffic engineering (MPLS TE, Segment Routing)
+
+### Why Not Use Utilization?
+
+**Same reason - too dynamic:**
+- Link goes from 10% to 90% utilization constantly
+- Would cause continuous SPF recalculations
+- Routing would never be stable
+
+**Modern approach:**
+- OSPF provides stable topology-based routing
+- Traffic engineering overlay (MPLS, SD-WAN) handles dynamic optimization
+
+---
+
+## Historical Context: Why Cost Was Revolutionary
+
+### Before OSPF (RIP era - 1980s)
+
+**Metric:** Hop count only
+**Problem:** Can't express link quality
+**Result:** Suboptimal routing
+
+**Example:**
+```
+    A -- [9.6 kbps modem] -- B     (1 hop, preferred)
+    
+    A -- [T1] -- C -- [T1] -- B    (2 hops, ignored)
+```
+
+RIP would send all traffic over the 9.6 kbps modem link because "1 hop < 2 hops."
+
+### OSPF's Innovation (Late 1980s)
+
+**Metric:** Flexible cost
+**Capability:** Administrator defines what matters
+**Result:** Optimal routing based on real network properties
+
+**Same example with OSPF:**
+```
+    A -- [Cost 10000] -- B     (slow link)
+    
+    A -- [Cost 10] -- C -- [Cost 10] -- B  (fast links, total cost 20)
+```
+
+OSPF chooses the T1 path even though it's more hops, because total cost (20) beats direct cost (10000).
+
+---
+
+## Modern Challenge: Traffic Engineering
+
+As networks grow more complex, even OSPF cost isn't enough:
+
+**Requirements today:**
+- Route based on bandwidth availability
+- Route based on latency
+- Route based on application requirements
+- Route based on business policy
+- Change routes dynamically based on conditions
+
+**OSPF's role in modern networks:**
+- Provides base topology and reachability
+- Establishes shortest paths
+- Ensures loop-free routing
+
+**Overlay technologies handle advanced requirements:**
+- MPLS Traffic Engineering
+- Segment Routing
+- SD-WAN overlays
+
+**The lesson:** OSPF cost gets you 90% of the way there. For the remaining 10%, you need additional tools.
+
+---
+
+## What You'll Learn in This Lab
+
+Now that you understand why OSPF uses cost and how it enables optimal path selection, this lab will let you:
+
+1. **Observe** default cost calculations based on interface bandwidth
+2. **Calculate** costs manually to predict OSPF behavior
+3. **Manipulate** costs to influence path selection
+4. **Experience** ECMP when multiple paths have equal cost
+5. **Configure** reference bandwidth for modern networks
+6. **Implement** traffic engineering with manual cost assignment
+
+**The goal:** Master OSPF's most powerful feature - cost-based path selection.
+
+---
+
+## RFC 2328 Key Sections
+
+If you want to dive deeper into the specification:
+
+- **Section 2 (Key Concepts):** Defines cost and shortest path
+- **Section 16.1 (Dijkstra's algorithm):** How SPF uses cost
+- **Appendix C.3 (Cost):** Cost configuration details
+
+**Read the RFC at:** https://datatracker.ietf.org/doc/html/rfc2328
+
+---
+
+
 ## Topology
 
 ```
@@ -47,22 +458,74 @@ This lab comes with:
 
 ## Starting the Lab
 
-1. Deploy the lab:
-   ```bash
-   containerlab deploy -t topology.yml
-   # Or with sudo if needed:
-   sudo containerlab deploy -t topology.yml
-   ```
+### Step 1: Deploy the Lab
 
-2. Wait about 30 seconds for OSPF to converge
+Navigate to the lab directory and deploy the topology:
 
-3. Access the routers:
-   ```bash
-   docker exec -it clab-ospf-lab3-metrics-r1 vtysh
-   docker exec -it clab-ospf-lab3-metrics-r2 vtysh
-   docker exec -it clab-ospf-lab3-metrics-r3 vtysh
-   docker exec -it clab-ospf-lab3-metrics-r4 vtysh
-   ```
+```bash
+cd ~/labs/ospf/lab3-ospf-metrics
+sudo containerlab deploy -t topology.yml
+```
+
+The deployment will:
+- Create and start all router containers (R1, R2, R3, R4)
+- Configure the multi-path topology
+- Set up management network connectivity
+- Initialize SSH access (takes ~30 seconds)
+- **Pre-configure OSPF** (this is a Type B lab)
+
+### Step 2: Wait for Initialization
+
+**Important:** Wait 30 seconds after deployment for:
+- SSH to fully initialize
+- OSPF to converge (neighbors to form)
+
+### Step 3: Access the Routers
+
+You have three options for accessing the routers:
+
+#### Option A: VSCode Containerlab Extension (Recommended)
+
+1. Open the **Containerlab** panel in VSCode (left sidebar)
+2. You'll see R1, R2, R3, R4 with multiple interconnected paths
+3. Right-click on any router → Select "SSH"
+4. Enter password: `admin`
+5. You're automatically in vtysh
+
+**Tip:** The visual topology is especially helpful in this lab since you'll be comparing multiple paths between R1 and R4.
+
+#### Option B: Direct SSH
+
+```bash
+ssh admin@clab-ospf-lab3-metrics-r1  # Password: admin
+ssh admin@clab-ospf-lab3-metrics-r2
+ssh admin@clab-ospf-lab3-metrics-r3
+ssh admin@clab-ospf-lab3-metrics-r4
+```
+
+#### Option C: Docker Exec (Advanced)
+
+```bash
+docker exec -it clab-ospf-lab3-metrics-r1 vtysh
+docker exec -it clab-ospf-lab3-metrics-r2 vtysh
+docker exec -it clab-ospf-lab3-metrics-r3 vtysh
+docker exec -it clab-ospf-lab3-metrics-r4 vtysh
+```
+
+### Working in the Router CLI
+
+Once connected (via any method), you're in **vtysh** - the FRR router CLI.
+
+**Basic navigation:**
+```
+r1# show ip ospf neighbor          # View OSPF neighbors
+r1# show ip route                  # View routing table
+r1# configure terminal             # Enter configuration mode
+r1(config)# router ospf            # Enter OSPF configuration
+r1(config-router)# exit            # Back to config mode
+r1(config)# exit                   # Back to exec mode
+r1# exit                           # Exit vtysh (back to bash)
+```
 
 ## Lab Tasks
 
