@@ -401,8 +401,6 @@ These sample labs are part of our **complete 24-lab OSPF curriculum** designed f
 - OSPF over Frame Relay (legacy)
 - Advanced troubleshooting
 
-**Curriculum coverage:** Based on CCNP ENARSI exam topics
-
 ---
 
 ## Copyright & Licensing
@@ -410,7 +408,7 @@ These sample labs are part of our **complete 24-lab OSPF curriculum** designed f
 © 2026 Carpe DMVPN, LLC. All Rights Reserved.
 
 **Sample Labs:**
-This repository contains sample training materials demonstrating our curriculum quality. The complete OSPF course with all 24 labs and comprehensive workbooks is available for purchase.
+This repository contains sample training materials demonstrating our curriculum quality. The complete OSPF course with all 24 labs and comprehensive workbooks will be available for purchase soon.
 
 **Open Source Software:**
 The underlying tools used in these labs (Containerlab, FRRouting, Docker) are open-source and remain under their respective licenses. We claim no ownership of these tools.
