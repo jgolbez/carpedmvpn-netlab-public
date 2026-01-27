@@ -17,10 +17,10 @@ In the 1980s, RIP (Routing Information Protocol) used a simple metric: **hop cou
 
 **Scenario 1: The Slow "Short" Path**
 ```
-        [10 Mbps]
+        [1 Mbps]
     A -------------- B     (1 hop, preferred by RIP)
 
-    A -- [1 Gbps] -- C -- [1 Gbps] -- B     (2 hops, ignored by RIP)
+    A -- [10 Mbps] -- C -- [10 Mbps] -- B     (2 hops, ignored by RIP)
 ```
 RIP would choose the 10 Mbps direct path over the 1 Gbps path through C, even though the faster path could transfer data 100x faster.
 
