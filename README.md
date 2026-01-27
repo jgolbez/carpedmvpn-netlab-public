@@ -386,7 +386,6 @@ These sample labs are part of our **complete 24-lab OSPF curriculum** designed f
 - ✅ Step-by-step solution guides
 - ✅ Troubleshooting scenarios
 - ✅ Assessment materials with learning checklists
-- ✅ Coverage of all ENARSI OSPF topics
 - ✅ Lifetime access to updates
 
 **Topics covered in full curriculum:**
