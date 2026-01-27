@@ -3,7 +3,7 @@
 > **Free sample labs** demonstrating our professional vendor-neutral network training curriculum.  
 > Full OSPF course with 24+ comprehensive labs available for purchase.
 
-A complete containerized OSPF lab environment featuring zero-installation deployment via GitHub Codespaces, hands-on learning with industry-standard open-source tools, and curriculum designed for enterprise network training.
+A complete containerized OSPF lab environment featuring zero-installation deployment via GitHub Codespaces, visual topology interface with one-click router access, and curriculum designed for enterprise network training.
 
 ---
 
@@ -21,9 +21,16 @@ A complete containerized OSPF lab environment featuring zero-installation deploy
 - Students need only a web browser
 - Deploy labs in under 60 seconds
 
+**Visual Interactive Interface:**
+- VSCode Containerlab extension provides graphical topology view
+- Right-click any router to instantly SSH in
+- No memorizing container names or complex commands
+- Automatic router CLI (vtysh) on login
+
 **Professional Curriculum:**
 - Type A labs (build from scratch) and Type B labs (observe and modify)
 - Hands-on configuration, not just reading
+- Theory-first approach with RFC references
 - Designed for monetizable training courses
 
 ---
@@ -36,25 +43,21 @@ These are 3 of 24 labs from our complete OSPF training curriculum.
 **Path:** `~/labs/ospf/lab1-ospf-basics/`
 
 **What you'll learn:**
+- Why OSPF was created (RIP's limitations)
+- Link-state vs distance-vector routing
+- Dijkstra's SPF algorithm and why OSPF uses it
+- Router ID selection and significance
 - OSPF neighbor formation and adjacencies
-- Router ID selection and configuration
-- OSPF areas and area design
-- Cost metrics and SPF algorithm
+- OSPF areas and hierarchical design
+- Cost metrics and path selection
 - Network convergence behavior
 
 **Details:**
 - **Topology:** 3 FRR routers in triangle topology
 - **Type:** Type B (pre-configured, observe and modify)
-- **Time:** 45-60 minutes
+- **Time:** 60-90 minutes (includes theory reading)
 - **Level:** Beginner
-
-**Deploy:**
-```bash
-cd ~/labs/ospf/lab1-ospf-basics
-sudo containerlab deploy -t topology.yml
-docker exec -it clab-ospf-fundamentals-r1 vtysh
-```
-
+- **Theory:** Comprehensive with RFC 2328 quotations
 ---
 
 ### Lab 2: OSPF Network Types
@@ -67,46 +70,32 @@ docker exec -it clab-ospf-fundamentals-r1 vtysh
 - Point-to-multipoint for hub-spoke topologies
 - LSA differences between network types
 - When to use each network type
+- Production multi-access segment design
 
 **Details:**
 - **Topology:** 4 FRR routers in hub-spoke design
 - **Type:** Type A (build from scratch)
 - **Time:** 75 minutes
 - **Level:** Beginner to Intermediate
-
-**Deploy:**
-```bash
-cd ~/labs/ospf/lab2-ospf-network-types
-sudo containerlab deploy -t topology.yml
-docker exec -it clab-ospf-lab2-network-types-r1 vtysh
-```
-
 ---
 
 ### Lab 3: OSPF Metrics and Path Selection
 **Path:** `~/labs/ospf/lab3-ospf-metrics/`
 
 **What you'll learn:**
-- OSPF cost calculation and formula
+- OSPF cost calculation formula
+- Why cost instead of hop count
 - Manual cost assignment and manipulation
-- Reference bandwidth configuration
+- Reference bandwidth configuration and scaling
 - Path selection based on cost
 - Equal-Cost Multipath (ECMP) load balancing
-- Path preference strategies
+- Path preference strategies and traffic engineering
 
 **Details:**
 - **Topology:** 4 FRR routers with multiple paths between endpoints
 - **Type:** Type B (pre-configured, observe and modify)
 - **Time:** 60 minutes
 - **Level:** Beginner to Intermediate
-
-**Deploy:**
-```bash
-cd ~/labs/ospf/lab3-ospf-metrics
-sudo containerlab deploy -t topology.yml
-docker exec -it clab-ospf-lab3-metrics-r1 vtysh
-```
-
 ---
 
 ## Quick Start for Students
@@ -129,18 +118,28 @@ docker exec -it clab-ospf-lab3-metrics-r1 vtysh
    sudo containerlab deploy -t topology.yml
    ```
 
-5. **Access routers:**
+5. **Access routers using VSCode:**
+   - Open the **Containerlab** panel in VSCode (left sidebar)
+   - You'll see your deployed topology with router nodes
+   - Right-click on a router (e.g., R1) → Select "SSH"
+   - Login with username: `admin`, password: `admin`
+   - You'll automatically be in the router CLI (vtysh)
+
+   **Alternative - Command Line:**
    ```bash
+   # SSH directly
+   ssh admin@clab-ospf-fundamentals-r1
+   # Password: admin
+   
+   # Or use docker exec
    docker exec -it clab-ospf-fundamentals-r1 vtysh
    ```
 
 6. **Follow the lab guide:**
    ```bash
    cat lab-guide.md
-   # Or open in VS Code
+   # Or open in VS Code for better formatting
    ```
-
-That's it! No installation, no configuration, just learning.
 
 ---
 
@@ -206,33 +205,50 @@ sudo containerlab inspect -t topology.yml
 ```
 
 ### Accessing Routers
+
+**Option 1: VSCode Containerlab Extension (Recommended)**
+1. Open the **Containerlab** panel in VSCode (left sidebar icon)
+2. View your deployed topology visually
+3. Right-click on any router node
+4. Select "SSH"
+5. Enter credentials:
+   - Username: `admin`
+   - Password: `admin`
+6. You're automatically in vtysh (router CLI)
+
+**Option 2: Direct SSH**
 ```bash
-# Connect to router (replace with your lab and router name)
-docker exec -it clab-ospf-fundamentals-r1 vtysh
+# SSH to a router by name
+ssh admin@clab-ospf-fundamentals-r1
+# Password: admin
 
-# Example: Access R2 in Lab 1
-docker exec -it clab-ospf-fundamentals-r2 vtysh
-
-# Example: Access R1 in Lab 2
-docker exec -it clab-ospf-lab2-network-types-r1 vtysh
+# You'll be automatically placed in vtysh
 ```
 
-### Inside Router CLI
+**Option 3: Docker Exec (Fallback)**
 ```bash
-# View running configuration
-show running-config
+# Connect directly to router CLI
+docker exec -it clab-ospf-fundamentals-r1 vtysh
 
-# View OSPF neighbors
-show ip ospf neighbor
+# Examples for different labs:
+docker exec -it clab-ospf-fundamentals-r2 vtysh       # Lab 1, R2
+docker exec -it clab-ospf-lab2-network-types-r1 vtysh # Lab 2, R1
+docker exec -it clab-ospf-lab3-metrics-r1 vtysh       # Lab 3, R1
+```
 
-# View routing table
-show ip route
+**Inside Router CLI:**
+```bash
+# You're now in vtysh - the router CLI
+r1# show ip ospf neighbor
+r1# show ip route
+r1# configure terminal
+r1(config)# 
+```
 
-# View OSPF database
-show ip ospf database
-
-# Enter configuration mode
-configure terminal
+**To exit vtysh and return to bash:**
+```
+r1# exit
+admin@r1:~$
 ```
 
 ### Destroying Labs
@@ -246,6 +262,42 @@ sudo containerlab destroy -a --cleanup
 
 ---
 
+## VSCode Containerlab Extension
+
+The Containerlab extension provides a visual, interactive way to work with your lab topologies.
+
+**Features:**
+- **Visual Topology:** See your network diagram in VSCode
+- **One-Click SSH:** Right-click any router to instantly connect
+- **Automatic Login:** Pre-configured SSH access (admin/admin)
+- **Direct to CLI:** SSH sessions automatically start in router CLI (vtysh)
+- **Multiple Sessions:** Easy to open connections to multiple routers simultaneously
+- **No Commands to Remember:** Intuitive right-click interface
+
+**How to Use:**
+1. Deploy a lab using `sudo containerlab deploy -t topology.yml`
+2. Wait 30 seconds for SSH to initialize
+3. Open the Containerlab panel in VSCode (left sidebar)
+4. Your topology appears with all router nodes
+5. Right-click any router → Select "SSH"
+6. Enter password: `admin` (username auto-filled)
+7. You're immediately in the router CLI
+
+**Why This Matters:**
+- No need to remember long `docker exec` commands
+- Visual representation helps understand topology
+- Faster workflow for multi-router configurations
+- More intuitive for students new to containerized labs
+- Works the same in Codespaces and local VSCode
+
+**Alternative Access Methods:**
+- **SSH directly:** `ssh admin@<container-name>`
+- **Docker exec:** `docker exec -it <container-name> vtysh`
+
+The extension is pre-installed in GitHub Codespaces and provides the easiest way to interact with your labs.
+
+---
+
 ## Technology Stack
 
 **Orchestration:**
@@ -253,11 +305,12 @@ sudo containerlab destroy -a --cleanup
 - **Docker** - Container runtime
 
 **Networking:**
-- **FRRouting 10.1.1** - Full routing protocol suite (OSPF, BGP, IS-IS, etc.)
+- **FRRouting 10.1.0** - Full routing protocol suite (OSPF, BGP, IS-IS, etc.)
 - **Linux networking** - Real IP forwarding, not simulation
 
 **Development:**
 - **VS Code** - Integrated in Codespaces
+- **Containerlab VSCode Extension** - Visual topology with one-click SSH access
 - **GitHub Codespaces** - Cloud-based development environment
 
 **Why FRRouting?**
@@ -279,19 +332,27 @@ carpedmvpn-netlab-public/
 │   └── ospf/
 │       ├── lab1-ospf-basics/
 │       │   ├── configs/       # FRR router configurations
+│       │   │   ├── daemons
+│       │   │   ├── vtysh.conf
+│       │   │   ├── ssh-setup.sh
+│       │   │   └── r*.conf
 │       │   ├── lab-guide.md   # Student instructions
 │       │   └── topology.yml   # Containerlab topology
-│       └── lab2-ospf-network-types/
-│           ├── configs/       # FRR router configurations
-│           ├── lab-guide.md   # Student instructions
-│           └── topology.yml   # Containerlab topology
+│       ├── lab2-ospf-network-types/
+│       │   ├── configs/
+│       │   ├── lab-guide.md
+│       │   └── topology.yml
+│       └── lab3-ospf-metrics/
+│           ├── configs/
+│           ├── lab-guide.md
+│           └── topology.yml
 └── README.md                  # This file
 ```
 
 **Each lab folder contains:**
 - `topology.yml` - Defines the network topology for containerlab
-- `configs/` - FRR configuration files for each router
-- `lab-guide.md` - Complete student instructions with learning objectives
+- `configs/` - FRR configuration files and SSH setup script
+- `lab-guide.md` - Complete student instructions with theory and practice
 
 ---
 
@@ -323,14 +384,15 @@ carpedmvpn-netlab-public/
 
 ## Full OSPF Training Curriculum
 
-These sample labs are part of our **complete 24-lab OSPF curriculum** designed for network engineers seeking vendor-neutral OSPF expertise. Based on CCNP ENARSI exam topics.
+These sample labs are part of our **complete 24-lab OSPF curriculum** designed for network engineers seeking vendor-neutral OSPF expertise.
 
 **What's included in the full course:**
 - ✅ 24 progressive OSPF labs (Type A and Type B)
-- ✅ Complete lab workbooks with theory and practice
+- ✅ Theory-first approach with RFC quotations
+- ✅ Complete lab workbooks with comprehensive explanations
 - ✅ Step-by-step solution guides
 - ✅ Troubleshooting scenarios
-- ✅ Assessment materials
+- ✅ Assessment materials with learning checklists
 - ✅ Coverage of all ENARSI OSPF topics
 - ✅ Lifetime access to updates
 
@@ -347,7 +409,7 @@ These sample labs are part of our **complete 24-lab OSPF curriculum** designed f
 - OSPF over Frame Relay (legacy)
 - Advanced troubleshooting
 
-**Curriculum coverage:** 98% of vendor exam OSPF topics
+**Curriculum coverage:** Based on CCNP ENARSI exam topics
 
 ---
 
@@ -394,6 +456,36 @@ docker logs clab-ospf-fundamentals-r1
 sudo containerlab inspect -t topology.yml
 ```
 
+### Can't SSH to router
+
+```bash
+# Wait 30 seconds after deployment
+# SSH setup script needs time to run
+
+# Check if SSH is running in container
+docker exec clab-ospf-fundamentals-r1 ps aux | grep sshd
+# Should see: /usr/sbin/sshd -D
+
+# Verify container is running
+docker ps | grep ospf-fundamentals
+
+# Test direct access (bypass SSH)
+docker exec -it clab-ospf-fundamentals-r1 vtysh
+```
+
+### VSCode Extension not showing topology
+
+```bash
+# Reload VSCode window
+# Ctrl+Shift+P → "Developer: Reload Window"
+
+# Verify lab is deployed
+sudo containerlab inspect
+
+# Check extension is installed
+# Extensions panel → Search "containerlab"
+```
+
 ### Out of resources
 
 ```bash
@@ -417,11 +509,12 @@ sudo containerlab destroy -a --cleanup
 ## Additional Resources
 
 **Learning OSPF:**
+- [RFC 2328 - OSPF Version 2](https://datatracker.ietf.org/doc/html/rfc2328) - The definitive specification
 - [FRRouting OSPF Documentation](https://docs.frrouting.org/en/latest/ospf.html)
-- [RFC 2328 - OSPF Version 2](https://datatracker.ietf.org/doc/html/rfc2328)
 
 **Tools:**
 - [Containerlab Documentation](https://containerlab.dev)
+- [Containerlab VSCode Extension](https://marketplace.visualstudio.com/items?itemName=containerlab.containerlab)
 - [FRRouting Documentation](https://docs.frrouting.org)
 - [Docker Documentation](https://docs.docker.com)
 
@@ -436,4 +529,5 @@ sudo containerlab destroy -a --cleanup
 ```bash
 cd ~/labs/ospf/lab1-ospf-basics
 sudo containerlab deploy -t topology.yml
+# Then right-click R1 in the Containerlab panel to SSH in
 ```
